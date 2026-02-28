@@ -1,0 +1,168 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Awesome 3D Printing Atlas</title>
+  <meta name="description" content="Bilingual atlas of 3D printing tools, brands, firmware, slicers, and services based on awesome-3d-printing." />
+  <meta name="theme-color" content="#111827" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="bg-noise" aria-hidden="true"></div>
+  <div id="runtimeError" class="runtime-error" hidden></div>
+  <header class="hero">
+    <div class="hero-top">
+      <span class="badge" id="sourceBadge">Data: awesome-3d-printing</span>
+      <div class="hero-actions">
+        <button id="themeToggle" class="lang-toggle" type="button">Theme</button>
+        <button id="langToggle" class="lang-toggle" type="button">RU</button>
+      </div>
+    </div>
+    <h1 id="heroTitle">Awesome 3D Printing Atlas</h1>
+    <p id="heroSubtitle">A dense and practical map of the 3D printing ecosystem with tools, firmware, materials, services, and marketplaces.</p>
+    <div class="stats" id="stats"></div>
+    <div class="sync-row">
+      <button id="syncBtn" class="ghost-btn" type="button">Sync from GitHub</button>
+      <span id="syncStatus" class="muted"></span>
+      <span id="diffStatus" class="muted"></span>
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <section class="main-col">
+      <section class="controls">
+        <label class="search-wrap">
+          <span id="searchLabel">Search resources</span>
+          <input id="searchInput" type="search" placeholder="e.g. Klipper, Prusa, Slicer" />
+        </label>
+        <label class="filter-wrap">
+          <span id="sectionLabel">Section</span>
+          <select id="sectionFilter"></select>
+        </label>
+        <label class="filter-wrap">
+          <span id="sortLabel">Sort</span>
+          <select id="sortSelect"></select>
+        </label>
+        <label class="filter-wrap">
+          <span id="tagLabel">Tag</span>
+          <select id="tagFilter"></select>
+        </label>
+        <label class="filter-wrap">
+          <span id="levelLabel">Level</span>
+          <select id="levelFilter"></select>
+        </label>
+        <label class="filter-wrap">
+          <span id="typeLabel">Printer Type</span>
+          <select id="typeFilter"></select>
+        </label>
+      </section>
+
+      <section class="toolbar">
+        <button id="showFavBtn" class="ghost-btn" type="button">Favorites</button>
+        <button id="showHistoryBtn" class="ghost-btn" type="button">History</button>
+        <button id="randomBtn" class="ghost-btn" type="button">Random Tool</button>
+        <button id="beginnerBtn" class="ghost-btn" type="button">Beginner Mode</button>
+        <button id="langModeBtn" class="ghost-btn" type="button">RU+EN</button>
+        <button id="exportMdBtn" class="ghost-btn" type="button">Export MD</button>
+        <button id="exportJsonBtn" class="ghost-btn" type="button">Export JSON</button>
+        <button id="exportPdfBtn" class="ghost-btn" type="button">Export PDF</button>
+        <button id="importFavBtn" class="ghost-btn" type="button">Import Fav</button>
+        <button id="exportFavBtn" class="ghost-btn" type="button">Export Fav</button>
+        <button id="adminBtn" class="ghost-btn" type="button">Admin</button>
+      </section>
+
+      <section class="panel-grid">
+        <article class="panel" id="stackPanel">
+          <h2 id="stackTitle">Build Your Stack</h2>
+          <div class="stack-grid">
+            <label><span>Printer</span><select id="stackPrinter"></select></label>
+            <label><span>CAD</span><select id="stackCad"></select></label>
+            <label><span>Slicer</span><select id="stackSlicer"></select></label>
+            <label><span>Firmware</span><select id="stackFirmware"></select></label>
+          </div>
+          <div id="stackResult" class="muted"></div>
+        </article>
+
+        <article class="panel" id="comparePanel">
+          <h2 id="compareTitle">Compare (0/4)</h2>
+          <div id="compareTableWrap" class="table-wrap"></div>
+        </article>
+
+        <article class="panel" id="calcPanel">
+          <h2 id="calcTitle">Calculators</h2>
+          <div class="calc-grid">
+            <div>
+              <h3 id="costCalcTitle">Print Cost</h3>
+              <label><span>Filament g</span><input id="calcWeight" type="number" min="0" value="120" /></label>
+              <label><span>Price/kg</span><input id="calcPriceKg" type="number" min="0" value="22" /></label>
+              <label><span>Power W</span><input id="calcPower" type="number" min="0" value="120" /></label>
+              <label><span>Hours</span><input id="calcHours" type="number" min="0" value="6" /></label>
+              <label><span>kWh price</span><input id="calcKwh" type="number" min="0" value="0.2" step="0.01" /></label>
+              <p id="costResult"></p>
+            </div>
+            <div>
+              <h3 id="timeCalcTitle">Print Time</h3>
+              <label><span>Layer height mm</span><input id="timeLayer" type="number" min="0.01" value="0.2" step="0.01" /></label>
+              <label><span>Model height mm</span><input id="timeHeight" type="number" min="1" value="80" /></label>
+              <label><span>Avg speed mm/s</span><input id="timeSpeed" type="number" min="1" value="60" /></label>
+              <label><span>Path length/layer mm</span><input id="timePath" type="number" min="1" value="1800" /></label>
+              <p id="timeResult"></p>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel" id="guidePanel">
+          <h2 id="guideTitle">First Printer Guide</h2>
+          <ul id="guideList"></ul>
+        </article>
+
+        <article class="panel" id="mistakesPanel">
+          <h2 id="mistakesTitle">Common Mistakes</h2>
+          <ul id="mistakesList"></ul>
+        </article>
+      </section>
+
+      <section class="section-nav" id="sectionNav"></section>
+      <section id="grid" class="resource-grid" aria-live="polite"></section>
+    </section>
+  </main>
+
+  <input id="favFileInput" type="file" accept="application/json" hidden />
+
+  <template id="cardTemplate">
+    <article class="card reveal">
+      <div class="card-head">
+        <h3 class="card-title"></h3>
+        <div class="mini-actions">
+          <button class="mini-btn js-fav" type="button">Fav</button>
+          <button class="mini-btn js-compare" type="button">Cmp</button>
+          <button class="mini-btn js-copy" type="button">Link</button>
+          <button class="mini-btn js-edit" type="button">Edit</button>
+          <a class="card-link" target="_blank" rel="noreferrer noopener">Open</a>
+        </div>
+      </div>
+      <p class="card-description"></p>
+      <p class="card-description-en"></p>
+      <p class="card-analysis"></p>
+      <div class="card-meta">
+        <span class="card-section"></span>
+        <span class="card-level"></span>
+        <span class="card-type"></span>
+      </div>
+      <div class="tag-row"></div>
+      <div class="rec-row"></div>
+      <button class="report-link mini-btn js-report" type="button">Report broken link</button>
+    </article>
+  </template>
+
+  <script src="./data/resources-inline.js"></script>
+  <script src="./app.js" defer></script>
+</body>
+</html>

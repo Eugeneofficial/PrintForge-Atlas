@@ -1,0 +1,16 @@
+﻿{
+  "name": "Awesome 3D Printing Atlas",
+  "short_name": "3D Atlas",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f2efe7",
+  "theme_color": "#111827",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
