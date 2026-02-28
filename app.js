@@ -14,6 +14,17 @@ const i18n = {
     allLevels: 'All levels',
     allTypes: 'All types',
     sourceBadge: 'Data: awesome-3d-printing (GitHub)',
+    toolbar: {
+      favorites: 'Favorites',
+      history: 'History',
+      random: 'Random Tool',
+      beginner: 'Beginner Mode',
+      exportMd: 'Export MD',
+      exportJson: 'Export JSON',
+      exportPdf: 'Export PDF',
+      importFav: 'Import Fav',
+      exportFav: 'Export Fav',
+    },
     open: 'Open',
     noDescription: 'Description is not provided in the source list.',
     translatedFrom: 'Original EN',
@@ -34,6 +45,17 @@ const i18n = {
     allLevels: 'Любой уровень',
     allTypes: 'Любой тип',
     sourceBadge: 'Данные: awesome-3d-printing (GitHub)',
+    toolbar: {
+      favorites: 'Избранное',
+      history: 'История',
+      random: 'Случайный инструмент',
+      beginner: 'Режим новичка',
+      exportMd: 'Экспорт MD',
+      exportJson: 'Экспорт JSON',
+      exportPdf: 'Экспорт PDF',
+      importFav: 'Импорт избранного',
+      exportFav: 'Экспорт избранного',
+    },
     open: 'Открыть',
     noDescription: 'В исходном списке описание не указано.',
     translatedFrom: 'Оригинал EN',
@@ -54,6 +76,17 @@ const i18n = {
     allLevels: 'Alle Level',
     allTypes: 'Alle Typen',
     sourceBadge: 'Daten: awesome-3d-printing (GitHub)',
+    toolbar: {
+      favorites: 'Favoriten',
+      history: 'Verlauf',
+      random: 'Zufälliges Tool',
+      beginner: 'Anfänger-Modus',
+      exportMd: 'Export MD',
+      exportJson: 'Export JSON',
+      exportPdf: 'Export PDF',
+      importFav: 'Favoriten importieren',
+      exportFav: 'Favoriten exportieren',
+    },
     open: 'Öffnen',
     noDescription: 'In der Quellliste ist keine Beschreibung vorhanden.',
     translatedFrom: 'Original EN',
@@ -97,7 +130,6 @@ const LS = {
   favorites: 'atlas:favorites',
   history: 'atlas:history',
   compare: 'atlas:compare',
-  edits: 'atlas:edits',
   theme: 'atlas:theme',
   lang: 'atlas:lang',
   langMode: 'atlas:langMode',
@@ -124,11 +156,15 @@ const storage = (() => {
 
 const storedLang = storage.getItem(LS.lang);
 const initialLang = LANGS.includes(storedLang) ? storedLang : 'en';
+const storedTheme = storage.getItem(LS.theme);
+const initialTheme = ['light', 'dark'].includes(storedTheme)
+  ? storedTheme
+  : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 
 const state = {
   lang: initialLang,
   langMode: storage.getItem(LS.langMode) || 'both',
-  theme: storage.getItem(LS.theme) || 'mono',
+  theme: initialTheme,
   search: '',
   section: 'all',
   sort: 'relevance',
@@ -137,13 +173,11 @@ const state = {
   printerType: 'all',
   viewMode: 'all',
   beginnerMode: false,
-  adminMode: false,
   data: null,
   flat: [],
   favorites: loadJSON(LS.favorites, []),
   history: loadJSON(LS.history, []),
   compare: loadJSON(LS.compare, []),
-  edits: loadJSON(LS.edits, {}),
 };
 
 const els = bindEls();
@@ -163,7 +197,7 @@ function bindEls() {
     sortLabel: byId('sortLabel'), sortSelect: byId('sortSelect'), tagLabel: byId('tagLabel'), tagFilter: byId('tagFilter'),
     levelLabel: byId('levelLabel'), levelFilter: byId('levelFilter'), typeLabel: byId('typeLabel'), typeFilter: byId('typeFilter'),
     showFavBtn: byId('showFavBtn'), showHistoryBtn: byId('showHistoryBtn'), randomBtn: byId('randomBtn'), beginnerBtn: byId('beginnerBtn'), langModeBtn: byId('langModeBtn'),
-    exportMdBtn: byId('exportMdBtn'), exportJsonBtn: byId('exportJsonBtn'), exportPdfBtn: byId('exportPdfBtn'), importFavBtn: byId('importFavBtn'), exportFavBtn: byId('exportFavBtn'), adminBtn: byId('adminBtn'),
+    exportMdBtn: byId('exportMdBtn'), exportJsonBtn: byId('exportJsonBtn'), exportPdfBtn: byId('exportPdfBtn'), importFavBtn: byId('importFavBtn'), exportFavBtn: byId('exportFavBtn'),
     stackTitle: byId('stackTitle'), stackPrinter: byId('stackPrinter'), stackCad: byId('stackCad'), stackSlicer: byId('stackSlicer'), stackFirmware: byId('stackFirmware'), stackResult: byId('stackResult'),
     compareTitle: byId('compareTitle'), compareTableWrap: byId('compareTableWrap'),
     costResult: byId('costResult'), timeResult: byId('timeResult'),
@@ -210,14 +244,13 @@ async function loadData() {
 }
 
 function enrichData(raw) {
-  const edits = state.edits || {};
   const sections = (raw.sections || []).map((s) => {
     const slug = slugify(s.title_en);
     const items = (s.items || []).map((it, idx) => {
       const id = slugify(s.title_en + '-' + it.name);
-      const e = edits[id] || {};
-      const description_en = e.description_en ?? it.description_en ?? '';
-      const description_ru = e.description_ru ?? it.description_ru ?? '';
+      const description_en = it.description_en ?? '';
+      const description_ru = it.description_ru ?? '';
+      const description_de = it.description_de ?? '';
       const tags = deriveTags(s.title_en, it.name, description_en + ' ' + description_ru);
       const level = deriveLevel(s.title_en, it.name, description_en);
       const printerType = derivePrinterType(s.title_en, it.name, description_en);
@@ -226,8 +259,10 @@ function enrichData(raw) {
         id,
         section_en: s.title_en,
         section_ru: s.title_ru || s.title_en,
+        section_de: s.title_de || s.title_en,
         description_en,
         description_ru,
+        description_de,
         tags,
         level,
         printerType,
@@ -276,7 +311,6 @@ function bindEvents() {
   els.exportFavBtn.addEventListener('click', exportFavorites);
   els.importFavBtn.addEventListener('click', () => els.favFileInput.click());
   els.favFileInput.addEventListener('change', importFavorites);
-  els.adminBtn.addEventListener('click', () => { state.adminMode = !state.adminMode; renderDataViews(); });
 
   ['calcWeight', 'calcPriceKg', 'calcPower', 'calcHours', 'calcKwh', 'timeLayer', 'timeHeight', 'timeSpeed', 'timePath'].forEach((id) => {
     byId(id).addEventListener('input', renderCalculators);
@@ -301,6 +335,15 @@ function renderAll() {
   els.typeLabel.textContent = t.typeLabel;
   els.langToggle.textContent = state.lang.toUpperCase();
   els.langModeBtn.textContent = state.langMode.toUpperCase();
+  els.showFavBtn.textContent = t.toolbar.favorites;
+  els.showHistoryBtn.textContent = t.toolbar.history;
+  els.randomBtn.textContent = t.toolbar.random;
+  els.beginnerBtn.textContent = t.toolbar.beginner;
+  els.exportMdBtn.textContent = t.toolbar.exportMd;
+  els.exportJsonBtn.textContent = t.toolbar.exportJson;
+  els.exportPdfBtn.textContent = t.toolbar.exportPdf;
+  els.importFavBtn.textContent = t.toolbar.importFav;
+  els.exportFavBtn.textContent = t.toolbar.exportFav;
 
   renderFilters();
   renderSidebarAndNav();
@@ -312,7 +355,7 @@ function renderAll() {
 
 function renderFilters() {
   const t = i18n[state.lang];
-  setSelect(els.sectionFilter, [{ v: 'all', l: t.allSections }, ...state.data.sections.map((s) => ({ v: s.title_en, l: pickLang(s.title_en, s.title_ru) }))], state.section);
+  setSelect(els.sectionFilter, [{ v: 'all', l: t.allSections }, ...state.data.sections.map((s) => ({ v: s.title_en, l: pickLang(s.title_en, s.title_ru, s.title_de) }))], state.section);
   setSelect(els.sortSelect, [
     { v: 'relevance', l: t.sort.relevance },
     { v: 'az', l: t.sort.az },
@@ -330,7 +373,7 @@ function renderFilters() {
 function renderSidebarAndNav() {
   const t = i18n[state.lang];
   const all = `<button class="section-chip${state.section === 'all' ? ' active' : ''}" data-section="all">${esc(t.allSections)}</button>`;
-  const chips = state.data.sections.map((s) => `<button class="section-chip${state.section === s.title_en ? ' active' : ''}" data-section="${esc(s.title_en)}">${esc(pickLang(s.title_en, s.title_ru))}</button>`).join('');
+  const chips = state.data.sections.map((s) => `<button class="section-chip${state.section === s.title_en ? ' active' : ''}" data-section="${esc(s.title_en)}">${esc(pickLang(s.title_en, s.title_ru, s.title_de))}</button>`).join('');
   els.sectionNav.innerHTML = all + chips;
   els.sidebar.innerHTML = all + chips;
   [...els.sectionNav.querySelectorAll('.section-chip'), ...els.sidebar.querySelectorAll('.section-chip')].forEach((chip) => {
@@ -398,7 +441,7 @@ function getFilteredSections() {
         if (state.level !== 'all' && item.level !== state.level) return false;
         if (state.printerType !== 'all' && item.printerType !== state.printerType) return false;
         if (!q) return true;
-        return [item.name, item.description_en, item.description_ru, s.title_en, s.title_ru, item.tags.join(' ')].join(' ').toLowerCase().includes(q);
+        return [item.name, item.description_en, item.description_ru, item.description_de, s.title_en, s.title_ru, s.title_de, item.tags.join(' ')].join(' ').toLowerCase().includes(q);
       });
 
       items = sortItems(items);
@@ -431,7 +474,7 @@ function renderGrid() {
     const block = document.createElement('section');
     block.className = 'section-block';
     block.id = `section-${section.slug}`;
-    block.innerHTML = `<h2 class="section-title">${esc(pickLang(section.title_en, section.title_ru))}</h2><p class="section-guide">${esc(sectionGuides[section.title_en]?.[state.lang] || pickLang(section.title_en, section.title_ru))}</p>`;
+    block.innerHTML = `<h2 class="section-title">${esc(pickLang(section.title_en, section.title_ru, section.title_de))}</h2><p class="section-guide">${esc(sectionGuides[section.title_en]?.[state.lang] || pickLang(section.title_en, section.title_ru, section.title_de))}</p>`;
     const list = document.createElement('div');
     list.className = 'resource-grid';
 
@@ -446,7 +489,11 @@ function renderGrid() {
       link.href = item.url || state.data.source;
       link.addEventListener('click', () => pushHistory(item));
 
-      const desc = state.lang === 'ru' ? (item.description_ru || item.description_en) : (item.description_en || item.description_ru);
+      const desc = state.lang === 'ru'
+        ? (item.description_ru || item.description_en)
+        : state.lang === 'de'
+          ? (item.description_de || item.description_en)
+          : (item.description_en || item.description_ru);
       card.querySelector('.card-description').innerHTML = highlight(desc || t.noDescription, state.search);
 
       const descEn = card.querySelector('.card-description-en');
@@ -462,7 +509,7 @@ function renderGrid() {
       }
 
       card.querySelector('.card-analysis').textContent = buildAnalysis(item);
-      card.querySelector('.card-section').textContent = pickLang(section.title_en, section.title_ru);
+      card.querySelector('.card-section').textContent = pickLang(section.title_en, section.title_ru, section.title_de);
       card.querySelector('.card-level').textContent = item.level;
       card.querySelector('.card-type').textContent = item.printerType;
       card.querySelector('.tag-row').innerHTML = item.tags.map((x) => `<span class="tag">${esc(x)}</span>`).join('');
@@ -473,18 +520,23 @@ function renderGrid() {
       recRow.querySelectorAll('[data-jump]').forEach((btn) => btn.addEventListener('click', () => jumpToCard(btn.dataset.jump)));
 
       const favBtn = card.querySelector('.js-fav');
-      favBtn.textContent = favSet.has(item.id) ? 'Unfav' : 'Fav';
+      const favOn = state.lang === 'ru' ? 'Убрать' : (state.lang === 'de' ? 'Entfernen' : 'Unfav');
+      const favOff = state.lang === 'ru' ? 'В избранное' : (state.lang === 'de' ? 'Favorit' : 'Fav');
+      favBtn.textContent = favSet.has(item.id) ? favOn : favOff;
       favBtn.addEventListener('click', () => toggleFavorite(item.id));
 
       const cmpBtn = card.querySelector('.js-compare');
-      cmpBtn.textContent = cmpSet.has(item.id) ? 'DelCmp' : 'Cmp';
+      cmpBtn.textContent = cmpSet.has(item.id)
+        ? (state.lang === 'ru' ? 'Убрать cmp' : (state.lang === 'de' ? 'Cmp löschen' : 'DelCmp'))
+        : (state.lang === 'ru' ? 'Сравнить' : (state.lang === 'de' ? 'Vergleich' : 'Cmp'));
       cmpBtn.addEventListener('click', () => toggleCompare(item.id));
 
-      card.querySelector('.js-copy').addEventListener('click', () => copyDeepLink(item.id));
-      const editBtn = card.querySelector('.js-edit');
-      editBtn.style.display = state.adminMode ? 'inline-block' : 'none';
-      editBtn.addEventListener('click', () => editDescription(item));
-      card.querySelector('.js-report').addEventListener('click', () => reportBroken(item));
+      const copyBtn = card.querySelector('.js-copy');
+      copyBtn.textContent = state.lang === 'ru' ? 'Ссылка' : (state.lang === 'de' ? 'Link' : 'Link');
+      copyBtn.addEventListener('click', () => copyDeepLink(item.id));
+      const reportBtn = card.querySelector('.js-report');
+      reportBtn.textContent = state.lang === 'ru' ? 'Сообщить о битой ссылке' : (state.lang === 'de' ? 'Defekten Link melden' : 'Report broken link');
+      reportBtn.addEventListener('click', () => reportBroken(item));
 
       list.appendChild(card);
     });
@@ -516,7 +568,7 @@ function renderCompare() {
   }
   const header = picks.map((x) => `<th>${esc(x.name)}</th>`).join('');
   const row = (label, fn) => `<tr><td>${esc(label)}</td>${picks.map((x) => `<td>${esc(fn(x))}</td>`).join('')}</tr>`;
-  els.compareTableWrap.innerHTML = `<table><thead><tr><th>Metric</th>${header}</tr></thead><tbody>${row('Section', (x) => pickLang(x.section_en, x.section_ru))}${row('Level', (x) => x.level)}${row('Type', (x) => x.printerType)}${row('Tags', (x) => x.tags.join(', '))}</tbody></table>`;
+  els.compareTableWrap.innerHTML = `<table><thead><tr><th>Metric</th>${header}</tr></thead><tbody>${row('Section', (x) => pickLang(x.section_en, x.section_ru, x.section_de))}${row('Level', (x) => x.level)}${row('Type', (x) => x.printerType)}${row('Tags', (x) => x.tags.join(', '))}</tbody></table>`;
   persist(LS.compare, state.compare);
 }
 
@@ -613,19 +665,6 @@ function importFavorites(e) {
   e.target.value = '';
 }
 
-function editDescription(item) {
-  const currentRu = item.description_ru || '';
-  const currentEn = item.description_en || '';
-  const nextRu = prompt('RU description', currentRu);
-  if (nextRu === null) return;
-  const nextEn = prompt('EN description', currentEn);
-  if (nextEn === null) return;
-  state.edits[item.id] = { description_ru: nextRu, description_en: nextEn };
-  persist(LS.edits, state.edits);
-  state.data = enrichData(state.data);
-  renderDataViews();
-}
-
 async function copyDeepLink(id) {
   const url = `${location.origin}${location.pathname}#${id}`;
   await copyText(url);
@@ -683,9 +722,14 @@ async function syncFromGithub() {
     const next = parseReadme(md);
 
     const ruMap = new Map(state.flat.map((x) => [x.name.toLowerCase(), x.description_ru]));
+    const deMap = new Map(state.flat.map((x) => [x.name.toLowerCase(), x.description_de]));
     next.sections.forEach((s) => {
       s.title_ru = s.title_ru || s.title_en;
-      s.items.forEach((it) => { it.description_ru = ruMap.get(it.name.toLowerCase()) || it.description_en || ''; });
+      s.title_de = s.title_de || s.title_en;
+      s.items.forEach((it) => {
+        it.description_ru = ruMap.get(it.name.toLowerCase()) || it.description_en || '';
+        it.description_de = deMap.get(it.name.toLowerCase()) || it.description_en || '';
+      });
     });
 
     const prevNames = new Set(state.flat.map((x) => x.name));
@@ -723,7 +767,7 @@ function parseReadme(text) {
     if (!current || !buf.length) { buf = []; return; }
     const raw = buf.join(' ').trim();
     const m = raw.match(/^\[([^\]]+)\](?:\s*-\s*(.*))?$/);
-    if (m) current.items.push({ name: m[1].trim(), url: refs[m[1].trim()] || '', description_en: (m[2] || '').trim(), description_ru: '' });
+    if (m) current.items.push({ name: m[1].trim(), url: refs[m[1].trim()] || '', description_en: (m[2] || '').trim(), description_ru: '', description_de: '' });
     buf = [];
   };
 
@@ -739,7 +783,7 @@ function parseReadme(text) {
       flush();
       const title = h[1].trim();
       if (title.toLowerCase() === 'license') { current = null; return; }
-      current = { title_en: title, title_ru: title, items: [] };
+      current = { title_en: title, title_ru: title, title_de: title, items: [] };
       sections.push(current);
       return;
     }
@@ -766,7 +810,7 @@ function registerSW() {
 
 function updateSEO() {
   const selected = state.section === 'all' ? null : state.data.sections.find((x) => x.title_en === state.section);
-  const title = selected ? `${pickLang(selected.title_en, selected.title_ru)} | ${i18n[state.lang].pageTitle}` : i18n[state.lang].pageTitle;
+  const title = selected ? `${pickLang(selected.title_en, selected.title_ru, selected.title_de)} | ${i18n[state.lang].pageTitle}` : i18n[state.lang].pageTitle;
   document.title = title;
   const meta = document.querySelector('meta[name="description"]');
   const desc = selected ? (sectionGuides[selected.title_en]?.[state.lang] || i18n[state.lang].subtitle) : i18n[state.lang].subtitle;
@@ -783,18 +827,15 @@ function updateSEO() {
 }
 
 function cycleTheme() {
-  const seq = ['mono', 'neon', 'industrial'];
-  state.theme = seq[(seq.indexOf(state.theme) + 1) % seq.length];
+  state.theme = state.theme === 'dark' ? 'light' : 'dark';
   storage.setItem(LS.theme, state.theme);
   applyTheme();
 }
 
 function applyTheme() {
-  document.body.classList.remove('theme-mono', 'theme-neon', 'theme-industrial');
-  if (state.theme === 'mono') document.body.classList.add('theme-mono');
-  if (state.theme === 'neon') document.body.classList.add('theme-neon');
-  if (state.theme === 'industrial') document.body.classList.add('theme-industrial');
-  if (els.themeToggle) els.themeToggle.textContent = `Theme:${state.theme}`;
+  document.body.classList.remove('theme-dark');
+  if (state.theme === 'dark') document.body.classList.add('theme-dark');
+  if (els.themeToggle) els.themeToggle.textContent = state.theme === 'dark' ? 'Theme:Dark' : 'Theme:Light';
 }
 
 function deriveTags(section, name, text) {
@@ -840,7 +881,11 @@ function copyText(v) {
 }
 
 function byId(id) { return document.getElementById(id); }
-function pickLang(en, ru) { return state.lang === 'ru' ? (ru || en) : en; }
+function pickLang(en, ru, de) {
+  if (state.lang === 'ru') return ru || en;
+  if (state.lang === 'de') return de || en;
+  return en;
+}
 function setSelect(el, opts, value) { el.innerHTML = opts.map((o) => `<option value="${esc(o.v)}">${esc(o.l)}</option>`).join(''); el.value = value; }
 function statHtml(value, label) { return `<div class="stat"><strong>${value}</strong><span>${esc(label)}</span></div>`; }
 function num(id) { return Number(byId(id).value || 0); }
