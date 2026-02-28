@@ -53,35 +53,6 @@ No backend, framework runtime, or database required.
 └─ README.md
 ```
 
-## Local Run
-```powershell
-cd C:\Users\mrjek\Desktop\NewSite
-python -m http.server 4173
-```
-
-Open:
-- <http://127.0.0.1:4173/>
-
-## Deployment (GitHub Pages)
-This repo is configured for deployment via GitHub Actions.
-
-1. Push to `main`
-```powershell
-git add .
-git commit -m "chore: release update"
-git push
-```
-
-2. In GitHub:
-- `Settings` -> `Pages` -> `Source: GitHub Actions`
-- `Settings` -> `Actions` -> `Workflow permissions: Read and write`
-
-3. Verify workflow success:
-- `Actions` tab -> `Deploy Static Site to GitHub Pages`
-
-Expected site URL:
-- <https://eugeneofficial.github.io/PrintForge-Atlas/>
-
 ## Attribution and Source Credits
 Primary source dataset and structure inspiration:
 - **Project:** `awesome-3d-printing`
@@ -100,35 +71,6 @@ Important note:
 - Upstream links are preserved as external references.
 - Upstream license attribution is explicitly documented in this README and in `LICENSE`.
 - This project does not claim ownership over upstream resource entries.
-
-## Operations Checklist
-Before publishing updates:
-- Confirm no runtime error banner
-- Validate EN/RU/DE switching
-- Validate Light/Dark theme toggle
-- Validate search/filter/sort behavior
-- Validate upstream sync and external links
-- Confirm GitHub Actions deploy is green
-
-## Troubleshooting
-### Pages workflow fails on "Setup Pages"
-- Ensure `Settings -> Pages -> Source: GitHub Actions`
-- Ensure `Settings -> Actions -> Workflow permissions: Read and write`
-
-### Browser shows old UI after deploy
-- Hard refresh (`Ctrl+F5`)
-- If needed, unregister service worker and reload
-
-### Git identity errors on commit
-```powershell
-git config user.name "Eugeneofficial"
-git config user.email "abramovplay@gmail.com"
-```
-
-## Security and Privacy
-- No backend data processing
-- No analytics pipeline by default
-- User preferences are stored locally in browser storage
 
 ## License
 This project uses **CC0 1.0 Universal**.
