@@ -135,6 +135,7 @@ const LS = {
   compare: 'atlas:compare',
   linkHealth: 'atlas:linkHealth',
   introSeen: 'atlas:introSeen',
+  introSound: 'atlas:introSound',
   theme: 'atlas:theme',
   lang: 'atlas:lang',
   langMode: 'atlas:langMode',
@@ -146,18 +147,24 @@ const introCopy = {
   en: {
     title: 'Industrial-grade 3D Printing Atlas',
     subtitle: 'Tools, firmware, materials, services, and marketplaces in one practical map.',
+    sound: 'Sound On',
+    soundOn: 'Sound:On',
     enter: 'Enter Atlas',
     skip: 'Skip intro next time',
   },
   ru: {
     title: 'Профессиональный атлас 3D-печати',
     subtitle: 'Инструменты, прошивки, материалы, сервисы и маркетплейсы в одной практичной карте.',
+    sound: 'Включить звук',
+    soundOn: 'Звук:Вкл',
     enter: 'Открыть атлас',
     skip: 'Больше не показывать',
   },
   de: {
     title: 'Professioneller 3D-Druck-Atlas',
     subtitle: 'Tools, Firmware, Materialien, Services und Marktplätze in einer praktischen Karte.',
+    sound: 'Ton an',
+    soundOn: 'Ton:An',
     enter: 'Atlas öffnen',
     skip: 'Intro nicht mehr zeigen',
   },
@@ -192,6 +199,7 @@ const state = {
   langMode: storage.getItem(LS.langMode) || 'both',
   theme: initialTheme,
   introSeen: storage.getItem(LS.introSeen) === '1',
+  introSound: storage.getItem(LS.introSound) === '1',
   search: '',
   section: 'all',
   sort: 'relevance',
@@ -219,7 +227,7 @@ init().catch((err) => showRuntimeError(err?.message || String(err)));
 
 function bindEls() {
   return {
-    introScreen: byId('introScreen'), introTitle: byId('introTitle'), introSubtitle: byId('introSubtitle'), introEnterBtn: byId('introEnterBtn'), introSkipBtn: byId('introSkipBtn'),
+    introScreen: byId('introScreen'), introVideo: byId('introVideo'), introTitle: byId('introTitle'), introSubtitle: byId('introSubtitle'), introSoundBtn: byId('introSoundBtn'), introEnterBtn: byId('introEnterBtn'), introSkipBtn: byId('introSkipBtn'),
     heroTitle: byId('heroTitle'), heroSubtitle: byId('heroSubtitle'), sourceBadge: byId('sourceBadge'), stats: byId('stats'),
     langSelect: byId('langSelect'), themeToggle: byId('themeToggle'), syncBtn: byId('syncBtn'), syncStatus: byId('syncStatus'), diffStatus: byId('diffStatus'), lastUpdated: byId('lastUpdated'), checkLinksBtn: byId('checkLinksBtn'), suggestBtn: byId('suggestBtn'),
     searchLabel: byId('searchLabel'), searchInput: byId('searchInput'), sectionLabel: byId('sectionLabel'), sectionFilter: byId('sectionFilter'),
@@ -312,6 +320,7 @@ function enrichData(raw) {
   };
 }
 function bindEvents() {
+  els.introSoundBtn?.addEventListener('click', () => setIntroSound(true, true));
   els.introEnterBtn?.addEventListener('click', () => closeIntro(false));
   els.introSkipBtn?.addEventListener('click', () => closeIntro(true));
   els.langSelect.addEventListener('change', (event) => {
@@ -366,6 +375,7 @@ function renderAll() {
   document.title = t.pageTitle;
   if (els.introTitle) els.introTitle.textContent = intro.title;
   if (els.introSubtitle) els.introSubtitle.textContent = intro.subtitle;
+  if (els.introSoundBtn) els.introSoundBtn.textContent = state.introSound ? intro.soundOn : intro.sound;
   if (els.introEnterBtn) els.introEnterBtn.textContent = intro.enter;
   if (els.introSkipBtn) els.introSkipBtn.textContent = intro.skip;
   els.heroTitle.textContent = t.pageTitle;
@@ -945,6 +955,7 @@ function renderIntro() {
   const show = !state.introSeen;
   els.introScreen.hidden = !show;
   document.body.classList.toggle('intro-active', show);
+  setIntroSound(state.introSound, false);
 }
 
 function closeIntro(skipNextTime) {
@@ -954,6 +965,22 @@ function closeIntro(skipNextTime) {
   }
   els.introScreen.hidden = true;
   document.body.classList.remove('intro-active');
+}
+
+function setIntroSound(on, fromUser) {
+  const video = els.introVideo;
+  state.introSound = !!on;
+  storage.setItem(LS.introSound, state.introSound ? '1' : '0');
+  if (!video) return;
+  video.muted = !state.introSound;
+  if (state.introSound) video.volume = 1;
+  if (fromUser) {
+    video.play().catch(() => {});
+  }
+  if (els.introSoundBtn) {
+    const intro = introCopy[state.lang] || introCopy.en;
+    els.introSoundBtn.textContent = state.introSound ? intro.soundOn : intro.sound;
+  }
 }
 
 function updateSEO() {

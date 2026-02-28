@@ -17,15 +17,17 @@
   <div id="runtimeError" class="runtime-error" hidden></div>
   <section id="introScreen" class="intro-screen" aria-label="Intro screen">
     <div class="intro-video-wrap" aria-hidden="true">
-      <iframe
+      <video
         id="introVideo"
         class="intro-video"
-        src="https://www.youtube-nocookie.com/embed/NVup3hUtXFk?autoplay=1&mute=1&controls=0&loop=1&playlist=NVup3hUtXFk&modestbranding=1&rel=0&iv_load_policy=3"
-        title="3D printing intro video"
-        loading="eager"
-        allow="autoplay; encrypted-media; picture-in-picture"
-        referrerpolicy="strict-origin-when-cross-origin"
-      ></iframe>
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="metadata"
+      >
+        <source src="./1.mp4" type="video/mp4" />
+      </video>
     </div>
     <div class="intro-overlay"></div>
     <div class="intro-content">
@@ -33,6 +35,7 @@
       <h2 id="introTitle">Industrial-grade 3D Printing Atlas</h2>
       <p id="introSubtitle">Tools, firmware, materials, services, and marketplaces in one practical map.</p>
       <div class="intro-actions">
+        <button id="introSoundBtn" class="ghost-btn" type="button">Sound On</button>
         <button id="introEnterBtn" class="lang-toggle" type="button">Enter Atlas</button>
         <button id="introSkipBtn" class="ghost-btn" type="button">Skip intro next time</button>
       </div>
