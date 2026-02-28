@@ -1,63 +1,132 @@
-﻿# 3D Printing Atlas
+﻿# PrintForge Atlas
 
-Bilingual (RU/EN) static website based on [ad-si/awesome-3d-printing](https://github.com/ad-si/awesome-3d-printing).
+Production-ready bilingual (RU/EN) web catalog of 3D-printing resources, built from the curated upstream list [`ad-si/awesome-3d-printing`](https://github.com/ad-si/awesome-3d-printing).
 
-## Features
-- RU/EN interface and content modes (`RU`, `EN`, `BOTH`)
-- Search, filtering, sorting, tags, levels, printer types
-- Favorites, history, compare mode
-- Stack builder, calculators, beginner mode
-- Export/import tools
-- GitHub sync from upstream README
-- PWA support (`manifest` + `service-worker`)
+## Overview
+PrintForge Atlas is a static web application optimized for public hosting on GitHub Pages.
+It provides structured discovery of tools, brands, firmware, materials, services, and marketplaces for the 3D-printing ecosystem.
 
-## Local run
+Key goals:
+- Deliver a clean and fast resource directory with strong filtering/search UX
+- Support Russian and English content workflows
+- Work reliably in static hosting environments without backend dependencies
+- Be simple to maintain and update from the upstream source list
 
-```powershell
-cd NewSite
-python -m http.server 4173
+## Core Features
+- Bilingual UI and content display modes (`RU`, `EN`, `BOTH`)
+- Full-text search with match highlighting
+- Filters by section, tags, level, and printer type
+- Sorting by relevance/name/popularity/update score
+- Favorites, history, and comparison mode (up to 4 items)
+- Stack builder (Printer + CAD + Slicer + Firmware)
+- Cost and time calculators
+- Export tools (Markdown, JSON, PDF/print)
+- Import/export favorites JSON
+- Runtime error banner for easier debugging
+- Upstream sync from GitHub README with change delta (added/removed)
+- PWA baseline (manifest + service worker)
+
+## Tech Stack
+- HTML5 + CSS3 + Vanilla JavaScript
+- Static JSON/inline dataset
+- GitHub Actions for deployment
+- GitHub Pages for hosting
+
+No framework or server runtime is required.
+
+## Project Structure
+```text
+.
+├─ .github/workflows/
+│  └─ deploy-pages.yml        # GitHub Pages deployment pipeline
+├─ data/
+│  ├─ resources.json          # Structured dataset
+│  └─ resources-inline.js     # Inline dataset fallback for static/file contexts
+├─ app.js                     # Main application logic
+├─ styles.css                 # UI styling and responsive behavior
+├─ index.html                 # Entry page
+├─ 404.html                   # GitHub Pages fallback
+├─ service-worker.js          # Offline/cache support
+├─ manifest.webmanifest       # PWA metadata
+├─ icon.svg                   # App icon
+└─ README.md
 ```
 
-Open: `http://127.0.0.1:4173/`
-
-## GitHub Pages deployment
-
-This repo is ready for GitHub Actions Pages deploy via:
-`/.github/workflows/deploy-pages.yml`
-
-### 1) Create a new GitHub repo
-Example: `3d-printing-atlas`
-
-### 2) Push code
+## Local Development
+Run a local static server (recommended instead of `file://`):
 
 ```powershell
 cd C:\Users\mrjek\Desktop\NewSite
-git init
-git add .
-git commit -m "release: initial public version"
-git branch -M main
-git remote add origin https://github.com/<YOUR_USERNAME>/3d-printing-atlas.git
-git push -u origin main
+python -m http.server 4173
 ```
 
-### 3) Enable Pages
-- GitHub repo -> `Settings` -> `Pages`
-- `Source`: `GitHub Actions`
+Open:
+- `http://127.0.0.1:4173/`
 
-After first workflow run, site URL will be:
-`https://<YOUR_USERNAME>.github.io/3d-printing-atlas/`
+## Deployment (GitHub Pages)
+This repository is configured for automatic deployment via GitHub Actions.
 
-## Release checklist
-- [ ] Run local preview
-- [ ] Verify RU/EN switching
-- [ ] Verify Sync button
-- [ ] Verify no runtime error banner
-- [ ] Push to `main`
-- [ ] Confirm `Deploy Static Site to GitHub Pages` workflow success
+### 1) Push to `main`
+```powershell
+git add .
+git commit -m "docs: update professional README"
+git push
+```
 
-## Attribution
-Data source: `awesome-3d-printing` by ad-si (CC0-1.0 in upstream repository).
+### 2) Enable Pages source
+In GitHub repository settings:
+- `Settings` -> `Pages`
+- Source: `GitHub Actions`
 
-## Notes
-- If you open `index.html` directly (`file://`), some browser APIs can be restricted.
-- Recommended: always run via local server or GitHub Pages URL.
+### 3) Verify deployment
+- `Actions` tab: workflow `Deploy Static Site to GitHub Pages` must pass
+- Site URL format:
+  `https://<username>.github.io/<repository>/`
+
+For this repository:
+- `https://eugeneofficial.github.io/PrintForge-Atlas/`
+
+## Data Source and Update Policy
+Primary source:
+- [`ad-si/awesome-3d-printing`](https://github.com/ad-si/awesome-3d-printing)
+
+Recommended update flow:
+1. Sync upstream data in app UI (Sync button)
+2. Validate filters/search/cards
+3. Commit and push to `main`
+4. Confirm successful Pages deployment
+
+## Quality Checklist Before Release
+- No runtime error banner in browser
+- RU/EN switching works
+- Search, filters, and sorting work
+- External links open correctly
+- Service worker updates are applied (hard refresh after deploy)
+- GitHub Actions deployment is green
+
+## Troubleshooting
+### Repository push returns "Repository not found"
+- Ensure remote URL matches exact repository name and case
+- Ensure repository exists under the expected owner
+
+### Git commit fails due to identity
+Configure git user:
+```powershell
+git config user.name "Eugeneofficial"
+git config user.email "abramovplay@gmail.com"
+```
+
+### Page looks outdated after deploy
+- Hard refresh (`Ctrl+F5`)
+- If needed, unregister service worker in browser devtools and reload
+
+## Security and Privacy
+- No backend, no server-side data processing
+- User preferences are stored locally in browser storage
+- No personal data collection pipeline is included by default
+
+## License
+This project is distributed under the MIT License (see [`LICENSE`](./LICENSE)).
+
+Upstream dataset attribution:
+- `awesome-3d-printing` by `ad-si` (upstream license applies to upstream content)
