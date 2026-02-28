@@ -157,10 +157,25 @@
                 <label><span>Hours</span><input id="calcHours" type="number" min="0" value="6" step="0.01" /></label>
                 <label><span>kWh price</span><input id="calcKwh" type="number" min="0" value="0.2" step="0.01" /></label>
                 <label><span>Margin %</span><input id="calcMarkup" type="number" min="0" value="18" step="1" /></label>
+                <label><span>Currency</span>
+                  <select id="calcCurrency">
+                    <option value="USD">USD</option>
+                    <option value="EUR">EUR</option>
+                    <option value="RUB">RUB</option>
+                  </select>
+                </label>
+                <label><span>Printer price</span><input id="calcPrinterPrice" type="number" min="0" value="350" step="0.01" /></label>
+                <label><span>Printer life h</span><input id="calcPrinterLifeHours" type="number" min="1" value="2000" step="1" /></label>
+                <label><span>Failure %</span><input id="calcFailureRate" type="number" min="0" value="8" step="1" /></label>
+              </div>
+              <div class="calc-preset-row">
+                <button id="calcSavePresetBtn" class="mini-btn" type="button">Save Preset</button>
+                <button id="calcResetPresetBtn" class="mini-btn" type="button">Reset</button>
               </div>
               <div class="calc-breakdown">
                 <div><span id="calcMatLabel">Material</span><strong id="costMaterial">0.00</strong></div>
                 <div><span id="calcEnergyLabel">Energy</span><strong id="costEnergy">0.00</strong></div>
+                <div><span id="calcAmortLabel">Amortization</span><strong id="costAmort">0.00</strong></div>
                 <div><span id="calcBaseLabel">Subtotal</span><strong id="costSubtotal">0.00</strong></div>
                 <div><span id="calcFinalLabel">Final</span><strong id="costFinal">0.00</strong></div>
               </div>

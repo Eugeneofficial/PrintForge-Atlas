@@ -134,6 +134,7 @@ const LS = {
   history: 'atlas:history',
   compare: 'atlas:compare',
   linkHealth: 'atlas:linkHealth',
+  calcPreset: 'atlas:calcPreset:v1',
   introSeen: 'atlas:introSeen:v2',
   introSound: 'atlas:introSound',
   theme: 'atlas:theme',
@@ -171,6 +172,23 @@ const introCopy = {
 };
 
 const LANGS = ['en', 'ru', 'de'];
+const CALC_DEFAULTS = {
+  calcWeight: 120,
+  calcPriceKg: 22,
+  calcPower: 120,
+  calcHours: 6,
+  calcKwh: 0.2,
+  calcMarkup: 18,
+  calcCurrency: 'USD',
+  calcPrinterPrice: 350,
+  calcPrinterLifeHours: 2000,
+  calcFailureRate: 8,
+  timeLayer: 0.2,
+  timeHeight: 80,
+  timeSpeed: 60,
+  timePath: 1800,
+  timeOverhead: 18,
+};
 
 const storage = (() => {
   try {
@@ -252,6 +270,7 @@ async function init() {
   bindIntroEvents();
   renderIntro();
   await loadData();
+  loadCalcPreset();
   bindEvents();
   renderAll();
   registerSW();
@@ -361,9 +380,12 @@ function bindEvents() {
   els.importFavBtn.addEventListener('click', () => els.favFileInput.click());
   els.favFileInput.addEventListener('change', importFavorites);
 
-  ['calcWeight', 'calcPriceKg', 'calcPower', 'calcHours', 'calcKwh', 'calcMarkup', 'timeLayer', 'timeHeight', 'timeSpeed', 'timePath', 'timeOverhead'].forEach((id) => {
+  ['calcWeight', 'calcPriceKg', 'calcPower', 'calcHours', 'calcKwh', 'calcMarkup', 'calcCurrency', 'calcPrinterPrice', 'calcPrinterLifeHours', 'calcFailureRate', 'timeLayer', 'timeHeight', 'timeSpeed', 'timePath', 'timeOverhead'].forEach((id) => {
     byId(id).addEventListener('input', renderCalculators);
+    byId(id).addEventListener('change', renderCalculators);
   });
+  byId('calcSavePresetBtn')?.addEventListener('click', saveCalcPreset);
+  byId('calcResetPresetBtn')?.addEventListener('click', resetCalcPreset);
   byId('calcUseTimeBtn')?.addEventListener('click', () => {
     byId('calcHours').value = state.calcComputedHours.toFixed(2);
     renderCalculators();
@@ -719,11 +741,17 @@ function renderCompare() {
 
 function renderCalculators() {
   const labels = {
-    en: { est: 'Estimate', time: 'Time', material: 'Material', energy: 'Energy', subtotal: 'Subtotal', final: 'Final', layers: 'Layers', base: 'Base time', overhead: 'With overhead' },
-    ru: { est: 'Оценка', time: 'Время', material: 'Материал', energy: 'Электроэнергия', subtotal: 'База', final: 'Итог', layers: 'Слоёв', base: 'Базовое время', overhead: 'С учётом overhead' },
-    de: { est: 'Schätzung', time: 'Zeit', material: 'Material', energy: 'Energie', subtotal: 'Zwischensumme', final: 'Gesamt', layers: 'Schichten', base: 'Basiszeit', overhead: 'Mit Overhead' },
+    en: { est: 'Estimate', time: 'Time', material: 'Material', energy: 'Energy', amort: 'Amortization', subtotal: 'Subtotal', final: 'Final', layers: 'Layers', base: 'Base time', overhead: 'With overhead' },
+    ru: { est: 'Оценка', time: 'Время', material: 'Материал', energy: 'Электроэнергия', amort: 'Амортизация', subtotal: 'База', final: 'Итог', layers: 'Слоёв', base: 'Базовое время', overhead: 'С учётом overhead' },
+    de: { est: 'Schätzung', time: 'Zeit', material: 'Material', energy: 'Energie', amort: 'Abschreibung', subtotal: 'Zwischensumme', final: 'Gesamt', layers: 'Schichten', base: 'Basiszeit', overhead: 'Mit Overhead' },
   }[state.lang] || {};
-  const fmt = (v) => Number(v || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const currency = byId('calcCurrency').value || 'USD';
+  const fmt = (v) => new Intl.NumberFormat(undefined, {
+    style: 'currency',
+    currency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(Number(v || 0));
   const fmtDuration = (seconds) => {
     const total = Math.max(0, Math.round(seconds));
     const h = Math.floor(total / 3600);
@@ -737,16 +765,22 @@ function renderCalculators() {
   const h = Math.max(0, num('calcHours'));
   const kwh = Math.max(0, num('calcKwh'));
   const markupPct = Math.max(0, num('calcMarkup'));
+  const printerPrice = Math.max(0, num('calcPrinterPrice'));
+  const printerLifeHours = Math.max(1, num('calcPrinterLifeHours'));
+  const failureRate = Math.max(0, num('calcFailureRate'));
   const matCost = (g / 1000) * priceKg;
   const powerCost = ((powerW * h) / 1000) * kwh;
-  const subtotal = matCost + powerCost;
+  const amortCost = (printerPrice / printerLifeHours) * h * (1 + failureRate / 100);
+  const subtotal = matCost + powerCost + amortCost;
   const final = subtotal * (1 + markupPct / 100);
   byId('calcMatLabel').textContent = labels.material;
   byId('calcEnergyLabel').textContent = labels.energy;
+  byId('calcAmortLabel').textContent = labels.amort;
   byId('calcBaseLabel').textContent = labels.subtotal;
   byId('calcFinalLabel').textContent = labels.final;
   byId('costMaterial').textContent = fmt(matCost);
   byId('costEnergy').textContent = fmt(powerCost);
+  byId('costAmort').textContent = fmt(amortCost);
   byId('costSubtotal').textContent = fmt(subtotal);
   byId('costFinal').textContent = fmt(final);
   els.costResult.textContent = `${labels.est}: ${fmt(final)}`;
@@ -767,6 +801,7 @@ function renderCalculators() {
   byId('timeBase').textContent = fmtDuration(baseSec);
   byId('timeFinal').textContent = fmtDuration(finalSec);
   els.timeResult.textContent = `${labels.time}: ${fmtDuration(finalSec)} (${state.calcComputedHours.toFixed(2)} h)`;
+  saveCalcPreset();
 }
 
 function applyCalcPreset(profile) {
@@ -780,6 +815,36 @@ function applyCalcPreset(profile) {
   byId('timeSpeed').value = p.timeSpeed;
   byId('timePath').value = p.timePath;
   byId('timeOverhead').value = p.timeOverhead;
+  renderCalculators();
+}
+
+function loadCalcPreset() {
+  const saved = loadJSON(LS.calcPreset, null);
+  const src = saved && typeof saved === 'object' ? saved : CALC_DEFAULTS;
+  Object.keys(CALC_DEFAULTS).forEach((key) => {
+    const el = byId(key);
+    if (!el) return;
+    el.value = src[key] ?? CALC_DEFAULTS[key];
+  });
+}
+
+function saveCalcPreset() {
+  const payload = {};
+  Object.keys(CALC_DEFAULTS).forEach((key) => {
+    const el = byId(key);
+    if (!el) return;
+    payload[key] = el.value;
+  });
+  persist(LS.calcPreset, payload);
+}
+
+function resetCalcPreset() {
+  Object.keys(CALC_DEFAULTS).forEach((key) => {
+    const el = byId(key);
+    if (!el) return;
+    el.value = CALC_DEFAULTS[key];
+  });
+  persist(LS.calcPreset, CALC_DEFAULTS);
   renderCalculators();
 }
 
