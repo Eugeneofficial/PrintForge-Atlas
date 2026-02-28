@@ -217,6 +217,7 @@ const state = {
   history: loadJSON(LS.history, []),
   compare: loadJSON(LS.compare, []),
   linkHealth: loadJSON(LS.linkHealth, {}),
+  calcComputedHours: 0,
 };
 
 const els = bindEls();
@@ -360,8 +361,15 @@ function bindEvents() {
   els.importFavBtn.addEventListener('click', () => els.favFileInput.click());
   els.favFileInput.addEventListener('change', importFavorites);
 
-  ['calcWeight', 'calcPriceKg', 'calcPower', 'calcHours', 'calcKwh', 'timeLayer', 'timeHeight', 'timeSpeed', 'timePath'].forEach((id) => {
+  ['calcWeight', 'calcPriceKg', 'calcPower', 'calcHours', 'calcKwh', 'calcMarkup', 'timeLayer', 'timeHeight', 'timeSpeed', 'timePath', 'timeOverhead'].forEach((id) => {
     byId(id).addEventListener('input', renderCalculators);
+  });
+  byId('calcUseTimeBtn')?.addEventListener('click', () => {
+    byId('calcHours').value = state.calcComputedHours.toFixed(2);
+    renderCalculators();
+  });
+  document.querySelectorAll('.calc-preset').forEach((btn) => {
+    btn.addEventListener('click', () => applyCalcPreset(btn.dataset.calcProfile || 'balanced'));
   });
 
   [els.stackPrinter, els.stackCad, els.stackSlicer, els.stackFirmware].forEach((el) => el.addEventListener('change', renderStackResult));
@@ -710,27 +718,69 @@ function renderCompare() {
 }
 
 function renderCalculators() {
-  const g = num('calcWeight');
-  const priceKg = num('calcPriceKg');
-  const powerW = num('calcPower');
-  const h = num('calcHours');
-  const kwh = num('calcKwh');
+  const labels = {
+    en: { est: 'Estimate', time: 'Time', material: 'Material', energy: 'Energy', subtotal: 'Subtotal', final: 'Final', layers: 'Layers', base: 'Base time', overhead: 'With overhead' },
+    ru: { est: 'Оценка', time: 'Время', material: 'Материал', energy: 'Электроэнергия', subtotal: 'База', final: 'Итог', layers: 'Слоёв', base: 'Базовое время', overhead: 'С учётом overhead' },
+    de: { est: 'Schätzung', time: 'Zeit', material: 'Material', energy: 'Energie', subtotal: 'Zwischensumme', final: 'Gesamt', layers: 'Schichten', base: 'Basiszeit', overhead: 'Mit Overhead' },
+  }[state.lang] || {};
+  const fmt = (v) => Number(v || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fmtDuration = (seconds) => {
+    const total = Math.max(0, Math.round(seconds));
+    const h = Math.floor(total / 3600);
+    const m = Math.floor((total % 3600) / 60);
+    return `${h}h ${m}m`;
+  };
+
+  const g = Math.max(0, num('calcWeight'));
+  const priceKg = Math.max(0, num('calcPriceKg'));
+  const powerW = Math.max(0, num('calcPower'));
+  const h = Math.max(0, num('calcHours'));
+  const kwh = Math.max(0, num('calcKwh'));
+  const markupPct = Math.max(0, num('calcMarkup'));
   const matCost = (g / 1000) * priceKg;
   const powerCost = ((powerW * h) / 1000) * kwh;
-  const total = matCost + powerCost;
-  const estimate = state.lang === 'ru' ? 'Оценка: ' : (state.lang === 'de' ? 'Schätzung: ' : 'Estimate: ');
-  els.costResult.textContent = estimate + total.toFixed(2);
+  const subtotal = matCost + powerCost;
+  const final = subtotal * (1 + markupPct / 100);
+  byId('calcMatLabel').textContent = labels.material;
+  byId('calcEnergyLabel').textContent = labels.energy;
+  byId('calcBaseLabel').textContent = labels.subtotal;
+  byId('calcFinalLabel').textContent = labels.final;
+  byId('costMaterial').textContent = fmt(matCost);
+  byId('costEnergy').textContent = fmt(powerCost);
+  byId('costSubtotal').textContent = fmt(subtotal);
+  byId('costFinal').textContent = fmt(final);
+  els.costResult.textContent = `${labels.est}: ${fmt(final)}`;
 
   const layer = Math.max(0.01, num('timeLayer'));
   const height = Math.max(1, num('timeHeight'));
   const speed = Math.max(1, num('timeSpeed'));
   const path = Math.max(1, num('timePath'));
-  const layers = height / layer;
-  const sec = (layers * path) / speed;
-  const hours = sec / 3600;
-  const timeLabel = state.lang === 'ru' ? 'Время: ' : (state.lang === 'de' ? 'Zeit: ' : 'Time: ');
-  const hoursLabel = state.lang === 'ru' ? ' ч' : ' h';
-  els.timeResult.textContent = timeLabel + hours.toFixed(2) + hoursLabel;
+  const overheadPct = Math.max(0, num('timeOverhead'));
+  const layers = Math.ceil(height / layer);
+  const baseSec = (layers * path) / speed;
+  const finalSec = baseSec * (1 + overheadPct / 100);
+  state.calcComputedHours = finalSec / 3600;
+  byId('timeLayersLabel').textContent = labels.layers;
+  byId('timeBaseLabel').textContent = labels.base;
+  byId('timeFinalLabel').textContent = labels.overhead;
+  byId('timeLayers').textContent = String(layers);
+  byId('timeBase').textContent = fmtDuration(baseSec);
+  byId('timeFinal').textContent = fmtDuration(finalSec);
+  els.timeResult.textContent = `${labels.time}: ${fmtDuration(finalSec)} (${state.calcComputedHours.toFixed(2)} h)`;
+}
+
+function applyCalcPreset(profile) {
+  const presets = {
+    quality: { timeLayer: 0.12, timeSpeed: 42, timePath: 2100, timeOverhead: 24 },
+    balanced: { timeLayer: 0.2, timeSpeed: 60, timePath: 1800, timeOverhead: 18 },
+    speed: { timeLayer: 0.28, timeSpeed: 95, timePath: 1450, timeOverhead: 12 },
+  };
+  const p = presets[profile] || presets.balanced;
+  byId('timeLayer').value = p.timeLayer;
+  byId('timeSpeed').value = p.timeSpeed;
+  byId('timePath').value = p.timePath;
+  byId('timeOverhead').value = p.timeOverhead;
+  renderCalculators();
 }
 
 function toggleFavorite(id) {

@@ -147,23 +147,46 @@
 
         <article class="panel" id="calcPanel">
           <h2 id="calcTitle">Calculators</h2>
-          <div class="calc-grid">
-            <div>
+          <div class="calc-suite">
+            <div class="calc-card">
               <h3 id="costCalcTitle">Print Cost</h3>
-              <label><span>Filament g</span><input id="calcWeight" type="number" min="0" value="120" /></label>
-              <label><span>Price/kg</span><input id="calcPriceKg" type="number" min="0" value="22" /></label>
-              <label><span>Power W</span><input id="calcPower" type="number" min="0" value="120" /></label>
-              <label><span>Hours</span><input id="calcHours" type="number" min="0" value="6" /></label>
-              <label><span>kWh price</span><input id="calcKwh" type="number" min="0" value="0.2" step="0.01" /></label>
-              <p id="costResult"></p>
+              <div class="calc-grid">
+                <label><span>Filament g</span><input id="calcWeight" type="number" min="0" value="120" /></label>
+                <label><span>Price/kg</span><input id="calcPriceKg" type="number" min="0" value="22" /></label>
+                <label><span>Power W</span><input id="calcPower" type="number" min="0" value="120" /></label>
+                <label><span>Hours</span><input id="calcHours" type="number" min="0" value="6" step="0.01" /></label>
+                <label><span>kWh price</span><input id="calcKwh" type="number" min="0" value="0.2" step="0.01" /></label>
+                <label><span>Margin %</span><input id="calcMarkup" type="number" min="0" value="18" step="1" /></label>
+              </div>
+              <div class="calc-breakdown">
+                <div><span id="calcMatLabel">Material</span><strong id="costMaterial">0.00</strong></div>
+                <div><span id="calcEnergyLabel">Energy</span><strong id="costEnergy">0.00</strong></div>
+                <div><span id="calcBaseLabel">Subtotal</span><strong id="costSubtotal">0.00</strong></div>
+                <div><span id="calcFinalLabel">Final</span><strong id="costFinal">0.00</strong></div>
+              </div>
+              <p id="costResult" class="calc-main-result"></p>
             </div>
-            <div>
+            <div class="calc-card">
               <h3 id="timeCalcTitle">Print Time</h3>
-              <label><span>Layer height mm</span><input id="timeLayer" type="number" min="0.01" value="0.2" step="0.01" /></label>
-              <label><span>Model height mm</span><input id="timeHeight" type="number" min="1" value="80" /></label>
-              <label><span>Avg speed mm/s</span><input id="timeSpeed" type="number" min="1" value="60" /></label>
-              <label><span>Path length/layer mm</span><input id="timePath" type="number" min="1" value="1800" /></label>
-              <p id="timeResult"></p>
+              <div class="calc-grid">
+                <label><span>Layer height mm</span><input id="timeLayer" type="number" min="0.01" value="0.2" step="0.01" /></label>
+                <label><span>Model height mm</span><input id="timeHeight" type="number" min="1" value="80" /></label>
+                <label><span>Avg speed mm/s</span><input id="timeSpeed" type="number" min="1" value="60" /></label>
+                <label><span>Path/layer mm</span><input id="timePath" type="number" min="1" value="1800" /></label>
+                <label><span>Overhead %</span><input id="timeOverhead" type="number" min="0" value="18" /></label>
+              </div>
+              <div class="calc-preset-row">
+                <button class="mini-btn calc-preset" data-calc-profile="quality" type="button">Quality</button>
+                <button class="mini-btn calc-preset" data-calc-profile="balanced" type="button">Balanced</button>
+                <button class="mini-btn calc-preset" data-calc-profile="speed" type="button">Speed</button>
+                <button id="calcUseTimeBtn" class="mini-btn" type="button">Use for Cost</button>
+              </div>
+              <div class="calc-breakdown">
+                <div><span id="timeLayersLabel">Layers</span><strong id="timeLayers">0</strong></div>
+                <div><span id="timeBaseLabel">Base time</span><strong id="timeBase">0h 0m</strong></div>
+                <div><span id="timeFinalLabel">With overhead</span><strong id="timeFinal">0h 0m</strong></div>
+              </div>
+              <p id="timeResult" class="calc-main-result"></p>
             </div>
           </div>
         </article>
