@@ -126,7 +126,8 @@ git config user.email "abramovplay@gmail.com"
 - No personal data collection pipeline is included by default
 
 ## License
-This project is distributed under the MIT License (see [`LICENSE`](./LICENSE)).
+This project is distributed under the CC0 1.0 Universal license (see [`LICENSE`](./LICENSE)).
+Official text: <https://creativecommons.org/publicdomain/zero/1.0/>
 
 Upstream dataset attribution:
-- `awesome-3d-printing` by `ad-si` (upstream license applies to upstream content)
+- `awesome-3d-printing` by `ad-si` (CC0-1.0)
