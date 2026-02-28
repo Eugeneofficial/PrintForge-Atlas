@@ -89,6 +89,10 @@ body.theme-dark {
   overflow: hidden;
 }
 
+.intro-screen[hidden] {
+  display: none !important;
+}
+
 .intro-video-wrap {
   position: absolute;
   inset: -12%;
