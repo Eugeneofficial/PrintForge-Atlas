@@ -245,6 +245,7 @@ function bindEls() {
 
 async function init() {
   applyTheme();
+  bindIntroEvents();
   renderIntro();
   await loadData();
   bindEvents();
@@ -320,9 +321,6 @@ function enrichData(raw) {
   };
 }
 function bindEvents() {
-  els.introSoundBtn?.addEventListener('click', () => setIntroSound(true, true));
-  els.introEnterBtn?.addEventListener('click', () => closeIntro(false));
-  els.introSkipBtn?.addEventListener('click', () => closeIntro(true));
   els.langSelect.addEventListener('change', (event) => {
     state.lang = event.target.value;
     storage.setItem(LS.lang, state.lang);
@@ -366,6 +364,17 @@ function bindEvents() {
   [els.stackPrinter, els.stackCad, els.stackSlicer, els.stackFirmware].forEach((el) => el.addEventListener('change', renderStackResult));
   els.presetRow?.querySelectorAll('.preset-btn').forEach((btn) => btn.addEventListener('click', () => applyPreset(btn.dataset.preset)));
   window.addEventListener('hashchange', applyHashTarget);
+}
+
+function bindIntroEvents() {
+  if (!els.introScreen) return;
+  els.introSoundBtn?.addEventListener('click', () => setIntroSound(true, true));
+  els.introEnterBtn?.addEventListener('click', () => closeIntro(false));
+  els.introSkipBtn?.addEventListener('click', () => closeIntro(true));
+  els.introVideo?.addEventListener('ended', () => {
+    els.introVideo.currentTime = 0;
+    els.introVideo.play().catch(() => {});
+  });
 }
 
 function renderAll() {
@@ -955,6 +964,10 @@ function renderIntro() {
   const show = !state.introSeen;
   els.introScreen.hidden = !show;
   document.body.classList.toggle('intro-active', show);
+  if (show && els.introVideo) {
+    els.introVideo.loop = true;
+    els.introVideo.play().catch(() => {});
+  }
   setIntroSound(state.introSound, false);
 }
 
