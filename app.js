@@ -985,10 +985,16 @@ function setIntroSound(on, fromUser) {
   state.introSound = !!on;
   storage.setItem(LS.introSound, state.introSound ? '1' : '0');
   if (!video) return;
-  video.muted = !state.introSound;
-  if (state.introSound) video.volume = 1;
-  if (fromUser) {
+  const canUnmuteNow = !!fromUser || !!(navigator.userActivation && navigator.userActivation.hasBeenActive);
+  if (!state.introSound) {
+    video.muted = true;
+  } else if (canUnmuteNow) {
+    video.muted = false;
+    video.volume = 1;
     video.play().catch(() => {});
+  } else {
+    // Keep muted until a real user gesture; avoids browser autoplay warnings.
+    video.muted = true;
   }
   if (els.introSoundBtn) {
     const intro = introCopy[state.lang] || introCopy.en;

@@ -6,7 +6,14 @@
   <title>Awesome 3D Printing Atlas</title>
   <meta name="description" content="Bilingual atlas of 3D printing tools, brands, firmware, slicers, and services based on awesome-3d-printing." />
   <meta name="theme-color" content="#111827" />
-  <link rel="manifest" href="./manifest.webmanifest" />
+  <script>
+    if (location.protocol === 'http:' || location.protocol === 'https:') {
+      var m = document.createElement('link');
+      m.rel = 'manifest';
+      m.href = './manifest.webmanifest';
+      document.head.appendChild(m);
+    }
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />

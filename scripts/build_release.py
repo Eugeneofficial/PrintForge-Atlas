@@ -15,6 +15,7 @@ FILES = [
     'styles.css',
     'app.js',
     'config.js',
+    '1.mp4',
     '404.html',
     'manifest.webmanifest',
     'service-worker.js',
