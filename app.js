@@ -189,6 +189,11 @@ const CALC_DEFAULTS = {
   timePath: 1800,
   timeOverhead: 18,
 };
+const CALC_UI = {
+  en: { title: 'Calculators', cost: 'Print Cost', time: 'Print Time', save: 'Save Preset', reset: 'Reset', useTime: 'Use for Cost', quality: 'Quality', balanced: 'Balanced', speed: 'Speed' },
+  ru: { title: 'Калькуляторы', cost: 'Стоимость печати', time: 'Время печати', save: 'Сохранить пресет', reset: 'Сброс', useTime: 'Вставить во стоимость', quality: 'Качество', balanced: 'Баланс', speed: 'Скорость' },
+  de: { title: 'Rechner', cost: 'Druckkosten', time: 'Druckzeit', save: 'Preset speichern', reset: 'Zurücksetzen', useTime: 'In Kosten einsetzen', quality: 'Qualität', balanced: 'Ausgewogen', speed: 'Geschwindigkeit' },
+};
 
 const storage = (() => {
   try {
@@ -380,18 +385,29 @@ function bindEvents() {
   els.importFavBtn.addEventListener('click', () => els.favFileInput.click());
   els.favFileInput.addEventListener('change', importFavorites);
 
-  ['calcWeight', 'calcPriceKg', 'calcPower', 'calcHours', 'calcKwh', 'calcMarkup', 'calcCurrency', 'calcPrinterPrice', 'calcPrinterLifeHours', 'calcFailureRate', 'timeLayer', 'timeHeight', 'timeSpeed', 'timePath', 'timeOverhead'].forEach((id) => {
-    byId(id).addEventListener('input', renderCalculators);
-    byId(id).addEventListener('change', renderCalculators);
+  const calcIds = ['calcWeight', 'calcPriceKg', 'calcPower', 'calcHours', 'calcKwh', 'calcMarkup', 'calcCurrency', 'calcPrinterPrice', 'calcPrinterLifeHours', 'calcFailureRate', 'timeLayer', 'timeHeight', 'timeSpeed', 'timePath', 'timeOverhead'];
+  calcIds.forEach((id) => {
+    const el = byId(id);
+    if (!el) return;
+    const onCalcChange = () => {
+      renderCalculators();
+      saveCalcPreset();
+    };
+    el.addEventListener('input', onCalcChange);
+    el.addEventListener('change', onCalcChange);
   });
   byId('calcSavePresetBtn')?.addEventListener('click', saveCalcPreset);
   byId('calcResetPresetBtn')?.addEventListener('click', resetCalcPreset);
   byId('calcUseTimeBtn')?.addEventListener('click', () => {
     byId('calcHours').value = state.calcComputedHours.toFixed(2);
     renderCalculators();
+    saveCalcPreset();
   });
   document.querySelectorAll('.calc-preset').forEach((btn) => {
-    btn.addEventListener('click', () => applyCalcPreset(btn.dataset.calcProfile || 'balanced'));
+    btn.addEventListener('click', () => {
+      applyCalcPreset(btn.dataset.calcProfile || 'balanced');
+      saveCalcPreset();
+    });
   });
 
   [els.stackPrinter, els.stackCad, els.stackSlicer, els.stackFirmware].forEach((el) => el.addEventListener('change', renderStackResult));
@@ -498,8 +514,18 @@ function renderSidebarAndNav() {
 }
 
 function renderPanels() {
+  const c = CALC_UI[state.lang] || CALC_UI.en;
   els.guideTitle.textContent = state.lang === 'ru' ? 'Гайд по первому принтеру' : (state.lang === 'de' ? 'Leitfaden für den ersten Drucker' : 'First Printer Guide');
   els.mistakesTitle.textContent = state.lang === 'ru' ? 'Типичные ошибки' : (state.lang === 'de' ? 'Häufige Fehler' : 'Common Mistakes');
+  byId('calcTitle').textContent = c.title;
+  byId('costCalcTitle').textContent = c.cost;
+  byId('timeCalcTitle').textContent = c.time;
+  byId('calcSavePresetBtn').textContent = c.save;
+  byId('calcResetPresetBtn').textContent = c.reset;
+  byId('calcUseTimeBtn').textContent = c.useTime;
+  byId('calcPresetQuality').textContent = c.quality;
+  byId('calcPresetBalanced').textContent = c.balanced;
+  byId('calcPresetSpeed').textContent = c.speed;
   els.guideList.innerHTML = firstGuide[state.lang].map((x) => `<li>${esc(x)}</li>`).join('');
   els.mistakesList.innerHTML = mistakes[state.lang].map((x) => `<li>${esc(x)}</li>`).join('');
   renderStackSelectors();
@@ -801,7 +827,6 @@ function renderCalculators() {
   byId('timeBase').textContent = fmtDuration(baseSec);
   byId('timeFinal').textContent = fmtDuration(finalSec);
   els.timeResult.textContent = `${labels.time}: ${fmtDuration(finalSec)} (${state.calcComputedHours.toFixed(2)} h)`;
-  saveCalcPreset();
 }
 
 function applyCalcPreset(profile) {
@@ -1239,7 +1264,11 @@ function pickLang(en, ru, de) {
 }
 function setSelect(el, opts, value) { el.innerHTML = opts.map((o) => `<option value="${esc(o.v)}">${esc(o.l)}</option>`).join(''); el.value = value; }
 function statHtml(value, label) { return `<div class="stat"><strong>${value}</strong><span>${esc(label)}</span></div>`; }
-function num(id) { return Number(byId(id).value || 0); }
+function num(id) {
+  const raw = String(byId(id)?.value ?? '0').trim().replace(',', '.');
+  const value = Number(raw);
+  return Number.isFinite(value) ? value : 0;
+}
 function unique(arr) { return [...new Set(arr)]; }
 function overlap(a, b) { const s = new Set(a); return b.reduce((n, x) => n + (s.has(x) ? 1 : 0), 0); }
 function slugify(s) { return String(s).toLowerCase().replace(/[^a-z0-9а-яё]+/gi, '-').replace(/^-+|-+$/g, ''); }
