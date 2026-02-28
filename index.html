@@ -15,6 +15,31 @@
 <body>
   <div class="bg-noise" aria-hidden="true"></div>
   <div id="runtimeError" class="runtime-error" hidden></div>
+  <section id="introScreen" class="intro-screen" aria-label="Intro screen">
+    <div class="intro-video-wrap" aria-hidden="true">
+      <iframe
+        id="introVideo"
+        class="intro-video"
+        src="https://www.youtube-nocookie.com/embed/NVup3hUtXFk?autoplay=1&mute=1&controls=0&loop=1&playlist=NVup3hUtXFk&modestbranding=1&rel=0&iv_load_policy=3"
+        title="3D printing intro video"
+        loading="eager"
+        allow="autoplay; encrypted-media; picture-in-picture"
+        referrerpolicy="strict-origin-when-cross-origin"
+      ></iframe>
+    </div>
+    <div class="intro-overlay"></div>
+    <div class="intro-content">
+      <p class="intro-badge">PrintForge Atlas</p>
+      <h2 id="introTitle">Industrial-grade 3D Printing Atlas</h2>
+      <p id="introSubtitle">Tools, firmware, materials, services, and marketplaces in one practical map.</p>
+      <div class="intro-actions">
+        <button id="introEnterBtn" class="lang-toggle" type="button">Enter Atlas</button>
+        <button id="introSkipBtn" class="ghost-btn" type="button">Skip intro next time</button>
+      </div>
+    </div>
+  </section>
+
+  <div id="appShell">
   <header class="hero">
     <div class="hero-top">
       <span class="badge" id="sourceBadge">Data: awesome-3d-printing</span>
@@ -176,6 +201,7 @@
       <button class="report-link mini-btn js-report" type="button">Report broken link</button>
     </article>
   </template>
+  </div>
 
   <script src="./data/resources-inline.js"></script>
   <script src="./config.js"></script>

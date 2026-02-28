@@ -134,11 +134,33 @@ const LS = {
   history: 'atlas:history',
   compare: 'atlas:compare',
   linkHealth: 'atlas:linkHealth',
+  introSeen: 'atlas:introSeen',
   theme: 'atlas:theme',
   lang: 'atlas:lang',
   langMode: 'atlas:langMode',
   dataCache: 'atlas:dataCache',
   lastSync: 'atlas:lastSync',
+};
+
+const introCopy = {
+  en: {
+    title: 'Industrial-grade 3D Printing Atlas',
+    subtitle: 'Tools, firmware, materials, services, and marketplaces in one practical map.',
+    enter: 'Enter Atlas',
+    skip: 'Skip intro next time',
+  },
+  ru: {
+    title: 'Профессиональный атлас 3D-печати',
+    subtitle: 'Инструменты, прошивки, материалы, сервисы и маркетплейсы в одной практичной карте.',
+    enter: 'Открыть атлас',
+    skip: 'Больше не показывать',
+  },
+  de: {
+    title: 'Professioneller 3D-Druck-Atlas',
+    subtitle: 'Tools, Firmware, Materialien, Services und Marktplätze in einer praktischen Karte.',
+    enter: 'Atlas öffnen',
+    skip: 'Intro nicht mehr zeigen',
+  },
 };
 
 const LANGS = ['en', 'ru', 'de'];
@@ -169,6 +191,7 @@ const state = {
   lang: initialLang,
   langMode: storage.getItem(LS.langMode) || 'both',
   theme: initialTheme,
+  introSeen: storage.getItem(LS.introSeen) === '1',
   search: '',
   section: 'all',
   sort: 'relevance',
@@ -196,6 +219,7 @@ init().catch((err) => showRuntimeError(err?.message || String(err)));
 
 function bindEls() {
   return {
+    introScreen: byId('introScreen'), introTitle: byId('introTitle'), introSubtitle: byId('introSubtitle'), introEnterBtn: byId('introEnterBtn'), introSkipBtn: byId('introSkipBtn'),
     heroTitle: byId('heroTitle'), heroSubtitle: byId('heroSubtitle'), sourceBadge: byId('sourceBadge'), stats: byId('stats'),
     langSelect: byId('langSelect'), themeToggle: byId('themeToggle'), syncBtn: byId('syncBtn'), syncStatus: byId('syncStatus'), diffStatus: byId('diffStatus'), lastUpdated: byId('lastUpdated'), checkLinksBtn: byId('checkLinksBtn'), suggestBtn: byId('suggestBtn'),
     searchLabel: byId('searchLabel'), searchInput: byId('searchInput'), sectionLabel: byId('sectionLabel'), sectionFilter: byId('sectionFilter'),
@@ -213,6 +237,7 @@ function bindEls() {
 
 async function init() {
   applyTheme();
+  renderIntro();
   await loadData();
   bindEvents();
   renderAll();
@@ -287,6 +312,8 @@ function enrichData(raw) {
   };
 }
 function bindEvents() {
+  els.introEnterBtn?.addEventListener('click', () => closeIntro(false));
+  els.introSkipBtn?.addEventListener('click', () => closeIntro(true));
   els.langSelect.addEventListener('change', (event) => {
     state.lang = event.target.value;
     storage.setItem(LS.lang, state.lang);
@@ -334,8 +361,13 @@ function bindEvents() {
 
 function renderAll() {
   const t = i18n[state.lang];
+  const intro = introCopy[state.lang] || introCopy.en;
   document.documentElement.lang = state.lang;
   document.title = t.pageTitle;
+  if (els.introTitle) els.introTitle.textContent = intro.title;
+  if (els.introSubtitle) els.introSubtitle.textContent = intro.subtitle;
+  if (els.introEnterBtn) els.introEnterBtn.textContent = intro.enter;
+  if (els.introSkipBtn) els.introSkipBtn.textContent = intro.skip;
   els.heroTitle.textContent = t.pageTitle;
   els.heroSubtitle.textContent = t.subtitle;
   els.sourceBadge.textContent = t.sourceBadge;
@@ -906,6 +938,22 @@ function parseReadme(text) {
 
 function registerSW() {
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('./service-worker.js').catch(() => {});
+}
+
+function renderIntro() {
+  if (!els.introScreen) return;
+  const show = !state.introSeen;
+  els.introScreen.hidden = !show;
+  document.body.classList.toggle('intro-active', show);
+}
+
+function closeIntro(skipNextTime) {
+  if (skipNextTime) {
+    state.introSeen = true;
+    storage.setItem(LS.introSeen, '1');
+  }
+  els.introScreen.hidden = true;
+  document.body.classList.remove('intro-active');
 }
 
 function updateSEO() {
