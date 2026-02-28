@@ -1,0 +1,44 @@
+﻿{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PrintForge Atlas Resources",
+  "type": "object",
+  "required": ["source", "generated_at", "stats", "sections"],
+  "properties": {
+    "source": { "type": "string" },
+    "generated_at": { "type": "string" },
+    "stats": {
+      "type": "object",
+      "required": ["sections", "items"],
+      "properties": {
+        "sections": { "type": "integer", "minimum": 0 },
+        "items": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "sections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["title_en", "title_ru", "title_de", "items"],
+        "properties": {
+          "title_en": { "type": "string" },
+          "title_ru": { "type": "string" },
+          "title_de": { "type": "string" },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["name", "url", "description_en", "description_ru", "description_de"],
+              "properties": {
+                "name": { "type": "string" },
+                "url": { "type": "string" },
+                "description_en": { "type": "string" },
+                "description_ru": { "type": "string" },
+                "description_de": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,4 +1,7 @@
 ﻿# PrintForge Atlas
+[![Deploy](https://github.com/Eugeneofficial/PrintForge-Atlas/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/Eugeneofficial/PrintForge-Atlas/actions/workflows/deploy-pages.yml)
+[![Pages](https://img.shields.io/badge/pages-online-black)](https://eugeneofficial.github.io/PrintForge-Atlas/)
+[![License: CC0-1.0](https://img.shields.io/badge/license-CC0--1.0-lightgrey)](https://creativecommons.org/publicdomain/zero/1.0/)
 
 Professional bilingual/trilingual static catalog for 3D-printing resources, built from the curated upstream list:
 [`ad-si/awesome-3d-printing`](https://github.com/ad-si/awesome-3d-printing).
@@ -71,6 +74,9 @@ Important note:
 - Upstream links are preserved as external references.
 - Upstream license attribution is explicitly documented in this README and in `LICENSE`.
 - This project does not claim ownership over upstream resource entries.
+
+## Project Docs
+- Changelog: [`CHANGELOG.md`](./CHANGELOG.md)
 
 ## License
 This project uses **CC0 1.0 Universal**.

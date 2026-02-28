@@ -1,10 +1,11 @@
-﻿const CACHE = 'atlas-v2-2026-02-28';
+﻿const CACHE = 'atlas-v3-2026-02-28';
 const ASSETS = [
   './',
   './index.html',
   './404.html',
   './styles.css',
   './app.js',
+  './config.js',
   './data/resources-inline.js',
   './manifest.webmanifest',
   './icon.svg'

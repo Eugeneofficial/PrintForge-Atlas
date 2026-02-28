@@ -94,6 +94,9 @@ const i18n = {
     sort: { relevance: 'Relevanz', az: 'A-Z', popularity: 'Popularität', updated: 'Zuletzt aktualisiert' },
   },
 };
+if (window.APP_CONFIG && window.APP_CONFIG.i18n) {
+  Object.assign(i18n, window.APP_CONFIG.i18n);
+}
 
 const sectionGuides = {
   '3D Printer Brands': { en: 'Manufacturers of printers.', ru: 'Производители 3D-принтеров.', de: 'Hersteller von 3D-Druckern.' },
@@ -130,6 +133,7 @@ const LS = {
   favorites: 'atlas:favorites',
   history: 'atlas:history',
   compare: 'atlas:compare',
+  linkHealth: 'atlas:linkHealth',
   theme: 'atlas:theme',
   lang: 'atlas:lang',
   langMode: 'atlas:langMode',
@@ -178,6 +182,7 @@ const state = {
   favorites: loadJSON(LS.favorites, []),
   history: loadJSON(LS.history, []),
   compare: loadJSON(LS.compare, []),
+  linkHealth: loadJSON(LS.linkHealth, {}),
 };
 
 const els = bindEls();
@@ -192,7 +197,7 @@ init().catch((err) => showRuntimeError(err?.message || String(err)));
 function bindEls() {
   return {
     heroTitle: byId('heroTitle'), heroSubtitle: byId('heroSubtitle'), sourceBadge: byId('sourceBadge'), stats: byId('stats'),
-    langToggle: byId('langToggle'), themeToggle: byId('themeToggle'), syncBtn: byId('syncBtn'), syncStatus: byId('syncStatus'), diffStatus: byId('diffStatus'),
+    langSelect: byId('langSelect'), themeToggle: byId('themeToggle'), syncBtn: byId('syncBtn'), syncStatus: byId('syncStatus'), diffStatus: byId('diffStatus'), lastUpdated: byId('lastUpdated'), checkLinksBtn: byId('checkLinksBtn'), suggestBtn: byId('suggestBtn'),
     searchLabel: byId('searchLabel'), searchInput: byId('searchInput'), sectionLabel: byId('sectionLabel'), sectionFilter: byId('sectionFilter'),
     sortLabel: byId('sortLabel'), sortSelect: byId('sortSelect'), tagLabel: byId('tagLabel'), tagFilter: byId('tagFilter'),
     levelLabel: byId('levelLabel'), levelFilter: byId('levelFilter'), typeLabel: byId('typeLabel'), typeFilter: byId('typeFilter'),
@@ -202,7 +207,7 @@ function bindEls() {
     compareTitle: byId('compareTitle'), compareTableWrap: byId('compareTableWrap'),
     costResult: byId('costResult'), timeResult: byId('timeResult'),
     guideTitle: byId('guideTitle'), guideList: byId('guideList'), mistakesTitle: byId('mistakesTitle'), mistakesList: byId('mistakesList'),
-    sidebar: byId('sidebar'), sectionNav: byId('sectionNav'), grid: byId('grid'), template: byId('cardTemplate'), favFileInput: byId('favFileInput'),
+    sidebar: byId('sidebar'), sectionNav: byId('sectionNav'), grid: byId('grid'), template: byId('cardTemplate'), favFileInput: byId('favFileInput'), presetRow: byId('presetRow'),
   };
 }
 
@@ -282,17 +287,23 @@ function enrichData(raw) {
   };
 }
 function bindEvents() {
-  els.langToggle.addEventListener('click', () => {
-    const idx = LANGS.indexOf(state.lang);
-    const safeIdx = idx >= 0 ? idx : 0;
-    state.lang = LANGS[(safeIdx + 1) % LANGS.length];
+  els.langSelect.addEventListener('change', (event) => {
+    state.lang = event.target.value;
     storage.setItem(LS.lang, state.lang);
     renderAll();
   });
   els.themeToggle.addEventListener('click', cycleTheme);
   els.syncBtn.addEventListener('click', syncFromGithub);
+  els.checkLinksBtn.addEventListener('click', checkVisibleLinks);
+  els.suggestBtn.addEventListener('click', () => window.open('https://github.com/Eugeneofficial/PrintForge-Atlas/issues/new?template=resource_suggestion.yml', '_blank'));
 
-  els.searchInput.addEventListener('input', (e) => { state.search = e.target.value.trim().toLowerCase(); renderDataViews(); });
+  els.searchInput.addEventListener('input', (e) => {
+    clearTimeout(state.searchTimer);
+    state.searchTimer = setTimeout(() => {
+      state.search = e.target.value.trim().toLowerCase();
+      renderDataViews();
+    }, 180);
+  });
   els.sectionFilter.addEventListener('change', (e) => { state.section = e.target.value; renderDataViews(); updateSEO(); });
   els.sortSelect.addEventListener('change', (e) => { state.sort = e.target.value; renderDataViews(); });
   els.tagFilter.addEventListener('change', (e) => { state.tag = e.target.value; renderDataViews(); });
@@ -317,6 +328,7 @@ function bindEvents() {
   });
 
   [els.stackPrinter, els.stackCad, els.stackSlicer, els.stackFirmware].forEach((el) => el.addEventListener('change', renderStackResult));
+  els.presetRow?.querySelectorAll('.preset-btn').forEach((btn) => btn.addEventListener('click', () => applyPreset(btn.dataset.preset)));
   window.addEventListener('hashchange', applyHashTarget);
 }
 
@@ -333,7 +345,7 @@ function renderAll() {
   els.tagLabel.textContent = t.tagLabel;
   els.levelLabel.textContent = t.levelLabel;
   els.typeLabel.textContent = t.typeLabel;
-  els.langToggle.textContent = state.lang.toUpperCase();
+  els.langSelect.value = state.lang;
   els.langModeBtn.textContent = state.langMode.toUpperCase();
   els.showFavBtn.textContent = t.toolbar.favorites;
   els.showHistoryBtn.textContent = t.toolbar.history;
@@ -344,6 +356,12 @@ function renderAll() {
   els.exportPdfBtn.textContent = t.toolbar.exportPdf;
   els.importFavBtn.textContent = t.toolbar.importFav;
   els.exportFavBtn.textContent = t.toolbar.exportFav;
+  if (t.extra) {
+    els.checkLinksBtn.textContent = t.extra.checkLinks;
+    els.suggestBtn.textContent = t.extra.suggest;
+    els.lastUpdated.textContent = `${t.extra.lastUpdated}: ${formatDate(state.data.generated_at)}`;
+  }
+  localizePresets();
 
   renderFilters();
   renderSidebarAndNav();
@@ -396,6 +414,49 @@ function renderPanels() {
   renderCompare();
 }
 
+function localizePresets() {
+  const labels = {
+    en: { beginner: 'Beginner', 'open-source': 'Open Source', firmware: 'Firmware', marketplaces: 'Marketplaces' },
+    ru: { beginner: 'Новичок', 'open-source': 'Open Source', firmware: 'Прошивки', marketplaces: 'Маркетплейсы' },
+    de: { beginner: 'Anfänger', 'open-source': 'Open Source', firmware: 'Firmware', marketplaces: 'Marktplätze' },
+  };
+  const map = labels[state.lang] || labels.en;
+  els.presetRow?.querySelectorAll('.preset-btn').forEach((btn) => {
+    btn.textContent = map[btn.dataset.preset] || btn.dataset.preset;
+  });
+}
+
+function applyPreset(preset) {
+  state.viewMode = 'all';
+  state.section = 'all';
+  state.tag = 'all';
+  state.level = 'all';
+  state.printerType = 'all';
+  state.beginnerMode = false;
+  if (preset === 'beginner') state.level = 'beginner';
+  if (preset === 'open-source') state.tag = 'open-source';
+  if (preset === 'firmware') state.section = '3D Printer Firmware';
+  if (preset === 'marketplaces') state.section = 'Marketplaces';
+  renderFilters();
+  renderSidebarAndNav();
+  renderDataViews();
+}
+
+function updatePresetActive() {
+  const activePreset = state.level === 'beginner'
+    ? 'beginner'
+    : state.tag === 'open-source'
+      ? 'open-source'
+      : state.section === '3D Printer Firmware'
+        ? 'firmware'
+        : state.section === 'Marketplaces'
+          ? 'marketplaces'
+          : null;
+  els.presetRow?.querySelectorAll('.preset-btn').forEach((btn) => {
+    btn.classList.toggle('active', btn.dataset.preset === activePreset);
+  });
+}
+
 function renderStackSelectors() {
   fillStack(els.stackPrinter, '3D Printer Brands');
   fillStack(els.stackCad, 'CAD Tools');
@@ -423,6 +484,7 @@ function renderDataViews() {
   renderStats();
   renderCompare();
   renderCalculators();
+  updatePresetActive();
 }
 
 function getFilteredSections() {
@@ -474,7 +536,7 @@ function renderGrid() {
     const block = document.createElement('section');
     block.className = 'section-block';
     block.id = `section-${section.slug}`;
-    block.innerHTML = `<h2 class="section-title">${esc(pickLang(section.title_en, section.title_ru, section.title_de))}</h2><p class="section-guide">${esc(sectionGuides[section.title_en]?.[state.lang] || pickLang(section.title_en, section.title_ru, section.title_de))}</p>`;
+    block.innerHTML = `<h2 class="section-title">${esc(pickLang(section.title_en, section.title_ru, section.title_de))} <button class="mini-btn section-link-btn" type="button" data-section-link="${esc(block.id)}">#</button></h2><p class="section-guide">${esc(sectionGuides[section.title_en]?.[state.lang] || pickLang(section.title_en, section.title_ru, section.title_de))}</p>`;
     const list = document.createElement('div');
     list.className = 'resource-grid';
 
@@ -520,28 +582,41 @@ function renderGrid() {
       recRow.querySelectorAll('[data-jump]').forEach((btn) => btn.addEventListener('click', () => jumpToCard(btn.dataset.jump)));
 
       const favBtn = card.querySelector('.js-fav');
-      const favOn = state.lang === 'ru' ? 'Убрать' : (state.lang === 'de' ? 'Entfernen' : 'Unfav');
-      const favOff = state.lang === 'ru' ? 'В избранное' : (state.lang === 'de' ? 'Favorit' : 'Fav');
+      const favOn = i18n[state.lang]?.cardActions?.unfav || 'Unfav';
+      const favOff = i18n[state.lang]?.cardActions?.fav || 'Fav';
       favBtn.textContent = favSet.has(item.id) ? favOn : favOff;
+      favBtn.setAttribute('aria-label', favBtn.textContent);
       favBtn.addEventListener('click', () => toggleFavorite(item.id));
 
       const cmpBtn = card.querySelector('.js-compare');
       cmpBtn.textContent = cmpSet.has(item.id)
-        ? (state.lang === 'ru' ? 'Убрать cmp' : (state.lang === 'de' ? 'Cmp löschen' : 'DelCmp'))
-        : (state.lang === 'ru' ? 'Сравнить' : (state.lang === 'de' ? 'Vergleich' : 'Cmp'));
+        ? (i18n[state.lang]?.cardActions?.delCmp || 'DelCmp')
+        : (i18n[state.lang]?.cardActions?.cmp || 'Cmp');
+      cmpBtn.setAttribute('aria-label', cmpBtn.textContent);
       cmpBtn.addEventListener('click', () => toggleCompare(item.id));
 
       const copyBtn = card.querySelector('.js-copy');
-      copyBtn.textContent = state.lang === 'ru' ? 'Ссылка' : (state.lang === 'de' ? 'Link' : 'Link');
+      copyBtn.textContent = i18n[state.lang]?.cardActions?.link || 'Link';
+      copyBtn.setAttribute('aria-label', copyBtn.textContent);
       copyBtn.addEventListener('click', () => copyDeepLink(item.id));
       const reportBtn = card.querySelector('.js-report');
-      reportBtn.textContent = state.lang === 'ru' ? 'Сообщить о битой ссылке' : (state.lang === 'de' ? 'Defekten Link melden' : 'Report broken link');
+      reportBtn.textContent = i18n[state.lang]?.cardActions?.report || 'Report broken link';
       reportBtn.addEventListener('click', () => reportBroken(item));
+
+      const health = state.linkHealth[item.id] || 'unknown';
+      const healthEl = card.querySelector('.card-health');
+      healthEl.textContent = health.toUpperCase();
+      healthEl.classList.add(`health-${health}`);
 
       list.appendChild(card);
     });
 
     block.appendChild(list);
+    block.querySelector('.section-link-btn')?.addEventListener('click', (event) => {
+      const id = event.currentTarget.dataset.sectionLink;
+      copyText(`${location.origin}${location.pathname}#${id}`);
+      location.hash = id;
+    });
     els.grid.appendChild(block);
   });
 }
@@ -750,6 +825,31 @@ async function syncFromGithub() {
   }
 }
 
+async function checkVisibleLinks() {
+  const items = getFilteredSections().flatMap((s) => s.items).slice(0, 40);
+  els.syncStatus.textContent = state.lang === 'ru' ? 'Проверка ссылок...' : (state.lang === 'de' ? 'Link-Prüfung...' : 'Checking links...');
+  for (const item of items) {
+    state.linkHealth[item.id] = await checkUrl(item.url);
+  }
+  persist(LS.linkHealth, state.linkHealth);
+  els.syncStatus.textContent = state.lang === 'ru' ? 'Проверка завершена' : (state.lang === 'de' ? 'Prüfung abgeschlossen' : 'Check complete');
+  renderGrid();
+}
+
+async function checkUrl(url) {
+  if (!url) return 'fail';
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 5000);
+  try {
+    await fetch(url, { method: 'GET', mode: 'no-cors', signal: controller.signal, cache: 'no-store' });
+    clearTimeout(timer);
+    return 'ok';
+  } catch (_) {
+    clearTimeout(timer);
+    return 'fail';
+  }
+}
+
 function parseReadme(text) {
   const lines = text.split(/\r?\n/);
   const refs = {};
@@ -878,6 +978,14 @@ function highlight(text, query) {
 
 function copyText(v) {
   return navigator.clipboard?.writeText(v).catch(() => {});
+}
+function formatDate(v) {
+  if (!v) return '-';
+  try {
+    return new Date(v).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+  } catch (_) {
+    return v;
+  }
 }
 
 function byId(id) { return document.getElementById(id); }

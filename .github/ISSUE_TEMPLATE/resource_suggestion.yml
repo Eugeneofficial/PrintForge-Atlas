@@ -1,0 +1,42 @@
+﻿name: Resource Suggestion
+description: Suggest a new 3D-printing resource
+labels: ["resource-suggestion"]
+body:
+  - type: input
+    id: name
+    attributes:
+      label: Resource name
+      placeholder: e.g. Tool / Brand / Service
+    validations:
+      required: true
+  - type: input
+    id: url
+    attributes:
+      label: URL
+      placeholder: https://example.com
+    validations:
+      required: true
+  - type: dropdown
+    id: section
+    attributes:
+      label: Section
+      options:
+        - 3D Printer Brands
+        - CAD Tools
+        - Control Software
+        - AMS / Filament Changer
+        - 3D Printer Firmware
+        - Slicers
+        - Online 3D Model Repositories
+        - Online Tools
+        - On Demand 3D Printing Services
+        - Marketplaces
+        - Technologies
+        - Filaments
+  - type: textarea
+    id: description
+    attributes:
+      label: Short description
+      placeholder: What does this resource do?
+    validations:
+      required: true

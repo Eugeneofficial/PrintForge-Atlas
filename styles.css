@@ -103,6 +103,24 @@ body.theme-dark {
 
 .hero-top { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
 .hero-actions { display: flex; gap: 8px; }
+.lang-select-wrap { display: inline-block; }
+.lang-select {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 8px 10px;
+  font-family: "JetBrains Mono", monospace;
+  background: var(--paper);
+  color: var(--ink);
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
 
 .badge {
   font-family: "JetBrains Mono", monospace;
@@ -257,6 +275,18 @@ textarea:focus {
   flex-wrap: wrap;
   gap: 8px;
 }
+.preset-row {
+  margin-top: 10px;
+  border-radius: 14px;
+  padding: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.preset-btn.active {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: color-mix(in srgb, var(--bg) 95%, white);
+}
 
 .panel-grid { margin-top: 10px; display: grid; grid-template-columns: repeat(2, minmax(280px, 1fr)); gap: 10px; }
 .panel { border-radius: 16px; padding: 13px; }
@@ -302,6 +332,7 @@ textarea:focus {
 
 .section-block { margin-top: 12px; }
 .section-title { margin: 0; font-size: clamp(1.28rem, 2vw, 1.88rem); }
+.section-link-btn { margin-left: 8px; padding: 3px 8px; }
 .section-guide { margin: 6px 0 10px; color: var(--hero-text); }
 
 .resource-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(315px, 1fr)); gap: 10px; }
@@ -361,7 +392,8 @@ textarea:focus {
 .card-section,
 .card-level,
 .card-type,
-.tag {
+.tag,
+.card-health {
   background: var(--chip-bg);
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -369,6 +401,9 @@ textarea:focus {
   font-family: "JetBrains Mono", monospace;
   font-size: 11px;
 }
+.health-ok { border-color: #2f855a; color: #2f855a; }
+.health-fail { border-color: #c53030; color: #c53030; }
+.health-unknown { opacity: 0.8; }
 
 .rec-link {
   border: 1px dashed var(--line);
@@ -382,6 +417,14 @@ textarea:focus {
 
 .empty { border-radius: 14px; padding: 13px; }
 mark { background: var(--mark-bg); border-radius: 4px; padding: 0 3px; }
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--ink) 45%, transparent);
+  outline-offset: 2px;
+}
 
 @media (max-width: 1180px) {
   .layout { grid-template-columns: 1fr; }

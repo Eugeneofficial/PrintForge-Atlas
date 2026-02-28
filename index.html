@@ -20,7 +20,14 @@
       <span class="badge" id="sourceBadge">Data: awesome-3d-printing</span>
       <div class="hero-actions">
         <button id="themeToggle" class="lang-toggle" type="button">Theme</button>
-        <button id="langToggle" class="lang-toggle" type="button">RU</button>
+        <label class="lang-select-wrap" for="langSelect">
+          <span class="visually-hidden">Language</span>
+          <select id="langSelect" class="lang-select" aria-label="Language selector">
+            <option value="en">EN</option>
+            <option value="ru">RU</option>
+            <option value="de">DE</option>
+          </select>
+        </label>
       </div>
     </div>
     <h1 id="heroTitle">Awesome 3D Printing Atlas</h1>
@@ -28,8 +35,11 @@
     <div class="stats" id="stats"></div>
     <div class="sync-row">
       <button id="syncBtn" class="ghost-btn" type="button">Sync from GitHub</button>
+      <button id="checkLinksBtn" class="ghost-btn" type="button">Check Links</button>
+      <button id="suggestBtn" class="ghost-btn" type="button">Suggest Resource</button>
       <span id="syncStatus" class="muted"></span>
       <span id="diffStatus" class="muted"></span>
+      <span id="lastUpdated" class="muted"></span>
     </div>
   </header>
 
@@ -40,27 +50,27 @@
       <section class="controls">
         <label class="search-wrap">
           <span id="searchLabel">Search resources</span>
-          <input id="searchInput" type="search" placeholder="e.g. Klipper, Prusa, Slicer" />
+          <input id="searchInput" type="search" placeholder="e.g. Klipper, Prusa, Slicer" aria-label="Search resources" />
         </label>
         <label class="filter-wrap">
           <span id="sectionLabel">Section</span>
-          <select id="sectionFilter"></select>
+          <select id="sectionFilter" aria-label="Section filter"></select>
         </label>
         <label class="filter-wrap">
           <span id="sortLabel">Sort</span>
-          <select id="sortSelect"></select>
+          <select id="sortSelect" aria-label="Sort filter"></select>
         </label>
         <label class="filter-wrap">
           <span id="tagLabel">Tag</span>
-          <select id="tagFilter"></select>
+          <select id="tagFilter" aria-label="Tag filter"></select>
         </label>
         <label class="filter-wrap">
           <span id="levelLabel">Level</span>
-          <select id="levelFilter"></select>
+          <select id="levelFilter" aria-label="Level filter"></select>
         </label>
         <label class="filter-wrap">
           <span id="typeLabel">Printer Type</span>
-          <select id="typeFilter"></select>
+          <select id="typeFilter" aria-label="Printer type filter"></select>
         </label>
       </section>
 
@@ -75,6 +85,12 @@
         <button id="exportPdfBtn" class="ghost-btn" type="button">Export PDF</button>
         <button id="importFavBtn" class="ghost-btn" type="button">Import Fav</button>
         <button id="exportFavBtn" class="ghost-btn" type="button">Export Fav</button>
+      </section>
+      <section class="preset-row" id="presetRow" aria-label="Quick presets">
+        <button class="ghost-btn preset-btn" data-preset="beginner" type="button">Beginner</button>
+        <button class="ghost-btn preset-btn" data-preset="open-source" type="button">Open Source</button>
+        <button class="ghost-btn preset-btn" data-preset="firmware" type="button">Firmware</button>
+        <button class="ghost-btn preset-btn" data-preset="marketplaces" type="button">Marketplaces</button>
       </section>
 
       <section class="panel-grid">
@@ -153,6 +169,7 @@
         <span class="card-section"></span>
         <span class="card-level"></span>
         <span class="card-type"></span>
+        <span class="card-health"></span>
       </div>
       <div class="tag-row"></div>
       <div class="rec-row"></div>
@@ -161,6 +178,7 @@
   </template>
 
   <script src="./data/resources-inline.js"></script>
+  <script src="./config.js"></script>
   <script src="./app.js" defer></script>
 </body>
 </html>
