@@ -980,6 +980,10 @@ function closeIntro(skipNextTime) {
   document.body.classList.remove('intro-active');
 }
 
+window.__atlasEnterIntro = () => closeIntro(false);
+window.__atlasSkipIntro = () => closeIntro(true);
+window.__atlasIntroSound = () => setIntroSound(true, true);
+
 function setIntroSound(on, fromUser) {
   const video = els.introVideo;
   state.introSound = !!on;

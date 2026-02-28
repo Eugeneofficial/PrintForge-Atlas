@@ -42,9 +42,9 @@
       <h2 id="introTitle">Industrial-grade 3D Printing Atlas</h2>
       <p id="introSubtitle">Tools, firmware, materials, services, and marketplaces in one practical map.</p>
       <div class="intro-actions">
-        <button id="introSoundBtn" class="ghost-btn" type="button">Sound On</button>
-        <button id="introEnterBtn" class="lang-toggle" type="button">Enter Atlas</button>
-        <button id="introSkipBtn" class="ghost-btn" type="button">Skip intro next time</button>
+        <button id="introSoundBtn" class="ghost-btn" type="button" onclick="window.__atlasIntroSound && window.__atlasIntroSound()">Sound On</button>
+        <button id="introEnterBtn" class="lang-toggle" type="button" onclick="window.__atlasEnterIntro && window.__atlasEnterIntro()">Enter Atlas</button>
+        <button id="introSkipBtn" class="ghost-btn" type="button" onclick="window.__atlasSkipIntro && window.__atlasSkipIntro()">Skip intro next time</button>
       </div>
     </div>
   </section>
