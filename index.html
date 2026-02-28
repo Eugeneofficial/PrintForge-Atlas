@@ -20,7 +20,19 @@
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-  <div id="themeWipe" class="theme-wipe" aria-hidden="true"></div>
+  <div id="themeBlink" class="theme-blink" aria-hidden="true">
+    <div class="theme-eye-stage">
+      <div class="theme-eye left-eye">
+        <span class="eye-pupil"></span>
+        <span class="eye-glint"></span>
+      </div>
+      <div class="theme-eye right-eye">
+        <span class="eye-pupil"></span>
+        <span class="eye-glint"></span>
+      </div>
+    </div>
+    <div id="themeBlinkQuote" class="theme-blink-quote" role="status" aria-live="polite" aria-atomic="true"></div>
+  </div>
   <div class="bg-noise" aria-hidden="true"></div>
   <div id="runtimeError" class="runtime-error" hidden></div>
   <section id="introScreen" class="intro-screen" aria-label="Intro screen">

@@ -194,6 +194,38 @@ const CALC_UI = {
   ru: { title: 'Калькуляторы', cost: 'Стоимость печати', time: 'Время печати', save: 'Сохранить пресет', reset: 'Сброс', useTime: 'Вставить во стоимость', quality: 'Качество', balanced: 'Баланс', speed: 'Скорость' },
   de: { title: 'Rechner', cost: 'Druckkosten', time: 'Druckzeit', save: 'Preset speichern', reset: 'Zurücksetzen', useTime: 'In Kosten einsetzen', quality: 'Qualität', balanced: 'Ausgewogen', speed: 'Geschwindigkeit' },
 };
+const THEME_QUOTES = {
+  en: {
+    dark: {
+      start: ['Eyes opening for night shift', 'Dark mode reactor online', 'Summoning midnight print vibes', 'Retina recalibration: moon mode'],
+      end: ['silence... the nozzle prowls.', 'layer lines now look cinematic.', 'printer hum unlocked.', 'night crew approved this transition.'],
+    },
+    light: {
+      start: ['Closing eyes against the photon blast', 'Switching to daylight operation', 'Sunglasses firmware loading', 'Brightness emergency protocol'],
+      end: ['retinas survived. barely.', 'even supports look cheerful now.', 'coffee mode activated.', 'day shift took over the printer.'],
+    },
+  },
+  ru: {
+    dark: {
+      start: ['Открываю глаза для ночной смены', 'Тёмный режим выходит на смену', 'Вызываю полуночный вайб печати', 'Калибрую сетчатку под ночь'],
+      end: ['тишина... сопло на охоте.', 'слои стали кинематографичными.', 'гул принтера официально включён.', 'ночная бригада одобрила переход.'],
+    },
+    light: {
+      start: ['Закрываю глаза от фотонной атаки', 'Переключаюсь в дневной режим', 'Прошивка солнцезащитных очков загружается', 'Протокол спасения сетчатки активирован'],
+      end: ['сетчатка выжила. почти.', 'даже саппорты выглядят бодро.', 'режим кофе активирован.', 'дневная смена приняла принтер.'],
+    },
+  },
+  de: {
+    dark: {
+      start: ['Augen auf fuer die Nachtschicht', 'Dark-Mode-Reaktor online', 'Mitternachtsdruck wird beschworen', 'Netzhaut auf Nachtbetrieb kalibriert'],
+      end: ['Stille... die Duese jagt.', 'die Layer sehen jetzt filmreif aus.', 'Druckerbrummen freigeschaltet.', 'Nachtschicht hat den Wechsel genehmigt.'],
+    },
+    light: {
+      start: ['Augen zu gegen den Photonenangriff', 'Wechsel in den Tagesbetrieb', 'Sonnenbrillen-Firmware wird geladen', 'Notfallprotokoll Helligkeit aktiv'],
+      end: ['Netzhaut hat ueberlebt. knapp.', 'sogar Supports wirken froehlich.', 'Kaffeemodus aktiviert.', 'Tagschicht hat den Drucker uebernommen.'],
+    },
+  },
+};
 
 const storage = (() => {
   try {
@@ -241,6 +273,9 @@ const state = {
   compare: loadJSON(LS.compare, []),
   linkHealth: loadJSON(LS.linkHealth, {}),
   calcComputedHours: 0,
+  themeAnimating: false,
+  themeTimers: [],
+  lastThemeQuote: '',
 };
 
 const els = bindEls();
@@ -254,7 +289,8 @@ init().catch((err) => showRuntimeError(err?.message || String(err)));
 
 function bindEls() {
   return {
-    themeWipe: byId('themeWipe'),
+    themeBlink: byId('themeBlink'),
+    themeBlinkQuote: byId('themeBlinkQuote'),
     introScreen: byId('introScreen'), introVideo: byId('introVideo'), introTitle: byId('introTitle'), introSubtitle: byId('introSubtitle'), introSoundBtn: byId('introSoundBtn'), introEnterBtn: byId('introEnterBtn'), introSkipBtn: byId('introSkipBtn'),
     heroTitle: byId('heroTitle'), heroSubtitle: byId('heroSubtitle'), sourceBadge: byId('sourceBadge'), stats: byId('stats'),
     langSelect: byId('langSelect'), themeToggle: byId('themeToggle'), syncBtn: byId('syncBtn'), syncStatus: byId('syncStatus'), diffStatus: byId('diffStatus'), lastUpdated: byId('lastUpdated'), checkLinksBtn: byId('checkLinksBtn'), suggestBtn: byId('suggestBtn'),
@@ -1196,36 +1232,100 @@ function updateSEO() {
 }
 
 function cycleTheme(event) {
+  if (state.themeAnimating) return;
   const nextTheme = state.theme === 'dark' ? 'light' : 'dark';
   const reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  const wipe = els.themeWipe;
-  if (!wipe || reduceMotion) {
+  const blink = els.themeBlink;
+  if (!blink || reduceMotion) {
     state.theme = nextTheme;
     storage.setItem(LS.theme, state.theme);
     applyTheme();
     return;
   }
 
-  const rect = els.themeToggle?.getBoundingClientRect();
-  const x = Number.isFinite(event?.clientX) ? event.clientX : (rect ? rect.left + (rect.width / 2) : (window.innerWidth / 2));
-  const y = Number.isFinite(event?.clientY) ? event.clientY : (rect ? rect.top + (rect.height / 2) : (window.innerHeight / 2));
-  wipe.style.setProperty('--wipe-x', `${x}px`);
-  wipe.style.setProperty('--wipe-y', `${y}px`);
-  wipe.classList.remove('active', 'to-dark', 'to-light');
-  void wipe.offsetWidth;
-  wipe.classList.add(nextTheme === 'dark' ? 'to-dark' : 'to-light');
-  wipe.classList.add('active');
+  state.themeAnimating = true;
+  clearThemeTimers();
+  const px = Number.isFinite(event?.clientX) ? event.clientX : (window.innerWidth / 2);
+  const py = Number.isFinite(event?.clientY) ? event.clientY : (window.innerHeight / 2);
+  const nx = ((px / Math.max(1, window.innerWidth)) - 0.5) * 2;
+  const ny = ((py / Math.max(1, window.innerHeight)) - 0.5) * 2;
+  const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
+  const variants = ['variant-a', 'variant-b', 'variant-c'];
+  const variant = variants[Math.floor(Math.random() * variants.length)];
+  const quote = generateThemeQuote(nextTheme);
+  blink.style.setProperty('--pupil-x', `${clamp(nx * 12, -12, 12)}px`);
+  blink.style.setProperty('--pupil-y', `${clamp(ny * 8, -8, 8)}px`);
+  blink.classList.remove('active', 'preclosed', 'preblink', 'anim-open', 'anim-close', 'show-quote', 'hide-quote', 'variant-a', 'variant-b', 'variant-c');
+  blink.classList.add(variant);
+  void blink.offsetWidth;
+  if (els.themeBlinkQuote) els.themeBlinkQuote.textContent = quote;
 
-  window.setTimeout(() => {
+  if (nextTheme === 'dark') {
+    // Dark theme feels like "eyes opening": lids start closed, then open.
+    blink.classList.add('active', 'preclosed', 'show-quote');
     state.theme = nextTheme;
     storage.setItem(LS.theme, state.theme);
     applyTheme();
-  }, 250);
+    requestAnimationFrame(() => {
+      blink.classList.remove('preclosed');
+      blink.classList.add('anim-open');
+    });
+    scheduleTheme(() => {
+      blink.classList.add('hide-quote');
+    }, 2480);
+    scheduleTheme(() => {
+      blink.classList.remove('active', 'anim-open', 'show-quote', 'hide-quote');
+      state.themeAnimating = false;
+    }, 2720);
+    return;
+  }
 
-  wipe.onanimationend = () => {
-    wipe.classList.remove('active', 'to-dark', 'to-light');
-    wipe.onanimationend = null;
-  };
+  // Light theme feels like "eyes closing": lids close over the whole screen.
+  blink.classList.add('active', 'show-quote');
+  scheduleTheme(() => {
+    blink.classList.add('preblink');
+  }, 1400);
+  scheduleTheme(() => {
+    blink.classList.remove('preblink');
+    blink.classList.add('anim-close');
+  }, 1640);
+  scheduleTheme(() => {
+    state.theme = nextTheme;
+    storage.setItem(LS.theme, state.theme);
+    applyTheme();
+  }, 2140);
+  scheduleTheme(() => {
+    blink.classList.add('hide-quote');
+  }, 2240);
+  scheduleTheme(() => {
+    blink.classList.remove('active', 'preblink', 'anim-close', 'preclosed', 'show-quote', 'hide-quote');
+    state.themeAnimating = false;
+  }, 2700);
+}
+
+function generateThemeQuote(targetTheme) {
+  const langSet = THEME_QUOTES[state.lang] || THEME_QUOTES.en;
+  const mode = targetTheme === 'dark' ? 'dark' : 'light';
+  const set = langSet[mode] || THEME_QUOTES.en[mode];
+  let candidate = '';
+  for (let i = 0; i < 4; i += 1) {
+    const a = set.start[Math.floor(Math.random() * set.start.length)];
+    const b = set.end[Math.floor(Math.random() * set.end.length)];
+    candidate = `${a}... ${b}`;
+    if (candidate !== state.lastThemeQuote) break;
+  }
+  state.lastThemeQuote = candidate;
+  return candidate;
+}
+
+function scheduleTheme(fn, delay) {
+  const id = window.setTimeout(fn, delay);
+  state.themeTimers.push(id);
+}
+
+function clearThemeTimers() {
+  state.themeTimers.forEach((id) => window.clearTimeout(id));
+  state.themeTimers = [];
 }
 
 function applyTheme() {
