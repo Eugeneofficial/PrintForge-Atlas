@@ -40,35 +40,57 @@ const i18n = {
     stats: { sections: 'Разделов', items: 'Ресурсов', visible: 'Показано', fav: 'Избранное' },
     sort: { relevance: 'Релевантность', az: 'A-Я', popularity: 'Популярность', updated: 'Сначала новое' },
   },
+  de: {
+    pageTitle: '3D-Druck Atlas',
+    subtitle: 'Eine dichte und praktische Karte des 3D-Druck-Ökosystems.',
+    searchLabel: 'Suche',
+    sectionLabel: 'Bereich',
+    sortLabel: 'Sortierung',
+    tagLabel: 'Tag',
+    levelLabel: 'Level',
+    typeLabel: 'Druckertyp',
+    allSections: 'Alle Bereiche',
+    allTags: 'Alle Tags',
+    allLevels: 'Alle Level',
+    allTypes: 'Alle Typen',
+    sourceBadge: 'Daten: awesome-3d-printing (GitHub)',
+    open: 'Öffnen',
+    noDescription: 'In der Quellliste ist keine Beschreibung vorhanden.',
+    translatedFrom: 'Original EN',
+    stats: { sections: 'Bereiche', items: 'Ressourcen', visible: 'Sichtbar', fav: 'Favoriten' },
+    sort: { relevance: 'Relevanz', az: 'A-Z', popularity: 'Popularität', updated: 'Zuletzt aktualisiert' },
+  },
 };
 
 const sectionGuides = {
-  '3D Printer Brands': { en: 'Manufacturers of printers.', ru: 'Производители 3D-принтеров.' },
-  'CAD Tools': { en: 'Software to design models.', ru: 'ПО для проектирования моделей.' },
-  'Control Software': { en: 'Printer host/control software.', ru: 'ПО управления принтером.' },
-  'AMS / Filament Changer': { en: 'Multi-color and multi-material systems.', ru: 'Системы смены филамента и многоцвета.' },
-  '3D Printer Firmware': { en: 'Firmware running on printer boards.', ru: 'Прошивки для контроллеров принтера.' },
-  'File Formats': { en: 'Common file standards.', ru: 'Ключевые форматы файлов.' },
-  Slicers: { en: 'Converts model to G-code.', ru: 'Нарезка моделей в G-code.' },
-  Scanner: { en: '3D scanning ecosystem.', ru: 'Экосистема 3D-сканирования.' },
-  'Online 3D Model Repositories': { en: 'Model libraries and repositories.', ru: 'Онлайн-библиотеки моделей.' },
-  'Online Tools': { en: 'Browser tools for mesh prep.', ru: 'Онлайн-инструменты обработки моделей.' },
-  'On Demand 3D Printing Services': { en: 'Manufacturing on demand.', ru: 'Сервисы печати на заказ.' },
-  Marketplaces: { en: 'Shops and digital product markets.', ru: 'Маркетплейсы и магазины.' },
-  'On Demand 3D Printing Price Comparison': { en: 'Price aggregators.', ru: 'Сравнение цен сервисов.' },
-  Technologies: { en: 'Core additive technologies.', ru: 'Базовые технологии аддитивки.' },
-  Filaments: { en: 'FDM materials.', ru: 'Материалы для FDM-печати.' },
-  Related: { en: 'Related resources.', ru: 'Смежные ресурсы.' },
+  '3D Printer Brands': { en: 'Manufacturers of printers.', ru: 'Производители 3D-принтеров.', de: 'Hersteller von 3D-Druckern.' },
+  'CAD Tools': { en: 'Software to design models.', ru: 'ПО для проектирования моделей.', de: 'Software zur Modellkonstruktion.' },
+  'Control Software': { en: 'Printer host/control software.', ru: 'ПО управления принтером.', de: 'Host- und Steuerungssoftware für Drucker.' },
+  'AMS / Filament Changer': { en: 'Multi-color and multi-material systems.', ru: 'Системы смены филамента и многоцвета.', de: 'Systeme für Mehrfarben- und Mehrmaterialdruck.' },
+  '3D Printer Firmware': { en: 'Firmware running on printer boards.', ru: 'Прошивки для контроллеров принтера.', de: 'Firmware für Drucker-Controller.' },
+  'File Formats': { en: 'Common file standards.', ru: 'Ключевые форматы файлов.', de: 'Gängige Dateiformate und Standards.' },
+  Slicers: { en: 'Converts model to G-code.', ru: 'Нарезка моделей в G-code.', de: 'Konvertiert Modelle in G-Code.' },
+  Scanner: { en: '3D scanning ecosystem.', ru: 'Экосистема 3D-сканирования.', de: '3D-Scanning-Ökosystem.' },
+  'Online 3D Model Repositories': { en: 'Model libraries and repositories.', ru: 'Онлайн-библиотеки моделей.', de: 'Online-Bibliotheken für 3D-Modelle.' },
+  'Online Tools': { en: 'Browser tools for mesh prep.', ru: 'Онлайн-инструменты обработки моделей.', de: 'Browser-Tools zur Modellvorbereitung.' },
+  'On Demand 3D Printing Services': { en: 'Manufacturing on demand.', ru: 'Сервисы печати на заказ.', de: 'On-Demand-Fertigungsdienste.' },
+  Marketplaces: { en: 'Shops and digital product markets.', ru: 'Маркетплейсы и магазины.', de: 'Marktplätze und Shops.' },
+  'On Demand 3D Printing Price Comparison': { en: 'Price aggregators.', ru: 'Сравнение цен сервисов.', de: 'Preisvergleichsplattformen.' },
+  Technologies: { en: 'Core additive technologies.', ru: 'Базовые технологии аддитивки.', de: 'Kerntechnologien der additiven Fertigung.' },
+  Filaments: { en: 'FDM materials.', ru: 'Материалы для FDM-печати.', de: 'Materialien für FDM-Druck.' },
+  Related: { en: 'Related resources.', ru: 'Смежные ресурсы.', de: 'Verwandte Ressourcen.' },
 };
 
 const mistakes = {
   en: ['Wrong first-layer setup', 'Ignoring moisture in filament', 'Too high speed without tuning', 'No temperature tower tests', 'No enclosure for technical polymers'],
   ru: ['Плохая калибровка первого слоя', 'Игнорирование влаги в филаменте', 'Слишком высокая скорость без тюна', 'Без температурных тестов', 'Печать техпластиками без камеры'],
+  de: ['Falsche First-Layer-Einstellungen', 'Feuchtigkeit im Filament ignorieren', 'Zu hohe Geschwindigkeit ohne Tuning', 'Keine Temperaturtests', 'Kein Gehäuse für technische Materialien'],
 };
 
 const firstGuide = {
   en: ['Pick reliable FDM printer with active community', 'Start with PLA', 'Master first-layer and bed adhesion', 'Use standard slicer profile first', 'Only then optimize speed and quality'],
   ru: ['Выбери надежный FDM с активным комьюнити', 'Начни с PLA', 'Освой первый слой и адгезию', 'Стартуй со стандартного профиля слайсера', 'Потом уже разгоняй скорость и качество'],
+  de: ['Wähle einen zuverlässigen FDM-Drucker mit aktiver Community', 'Starte mit PLA', 'Beherrsche First Layer und Haftung', 'Nutze zuerst Standard-Slicer-Profile', 'Optimiere erst dann Tempo und Qualität'],
 };
 
 const LS = {
@@ -82,6 +104,8 @@ const LS = {
   dataCache: 'atlas:dataCache',
   lastSync: 'atlas:lastSync',
 };
+
+const LANGS = ['en', 'ru', 'de'];
 
 const storage = (() => {
   try {
@@ -98,10 +122,13 @@ const storage = (() => {
   }
 })();
 
+const storedLang = storage.getItem(LS.lang);
+const initialLang = LANGS.includes(storedLang) ? storedLang : 'en';
+
 const state = {
-  lang: storage.getItem(LS.lang) || 'en',
+  lang: initialLang,
   langMode: storage.getItem(LS.langMode) || 'both',
-  theme: storage.getItem(LS.theme) || 'default',
+  theme: storage.getItem(LS.theme) || 'mono',
   search: '',
   section: 'all',
   sort: 'relevance',
@@ -221,7 +248,9 @@ function enrichData(raw) {
 }
 function bindEvents() {
   els.langToggle.addEventListener('click', () => {
-    state.lang = state.lang === 'en' ? 'ru' : 'en';
+    const idx = LANGS.indexOf(state.lang);
+    const safeIdx = idx >= 0 ? idx : 0;
+    state.lang = LANGS[(safeIdx + 1) % LANGS.length];
     storage.setItem(LS.lang, state.lang);
     renderAll();
   });
@@ -270,7 +299,7 @@ function renderAll() {
   els.tagLabel.textContent = t.tagLabel;
   els.levelLabel.textContent = t.levelLabel;
   els.typeLabel.textContent = t.typeLabel;
-  els.langToggle.textContent = state.lang === 'en' ? 'RU' : 'EN';
+  els.langToggle.textContent = state.lang.toUpperCase();
   els.langModeBtn.textContent = state.langMode.toUpperCase();
 
   renderFilters();
@@ -316,8 +345,8 @@ function renderSidebarAndNav() {
 }
 
 function renderPanels() {
-  els.guideTitle.textContent = state.lang === 'ru' ? 'Гайд по первому принтеру' : 'First Printer Guide';
-  els.mistakesTitle.textContent = state.lang === 'ru' ? 'Типичные ошибки' : 'Common Mistakes';
+  els.guideTitle.textContent = state.lang === 'ru' ? 'Гайд по первому принтеру' : (state.lang === 'de' ? 'Leitfaden für den ersten Drucker' : 'First Printer Guide');
+  els.mistakesTitle.textContent = state.lang === 'ru' ? 'Типичные ошибки' : (state.lang === 'de' ? 'Häufige Fehler' : 'Common Mistakes');
   els.guideList.innerHTML = firstGuide[state.lang].map((x) => `<li>${esc(x)}</li>`).join('');
   els.mistakesList.innerHTML = mistakes[state.lang].map((x) => `<li>${esc(x)}</li>`).join('');
   renderStackSelectors();
@@ -394,7 +423,7 @@ function renderGrid() {
   els.grid.innerHTML = '';
 
   if (!sections.length) {
-    els.grid.innerHTML = `<p class="empty">${state.lang === 'ru' ? 'Ничего не найдено' : 'No resources found'}</p>`;
+    els.grid.innerHTML = `<p class="empty">${state.lang === 'ru' ? 'Ничего не найдено' : (state.lang === 'de' ? 'Keine Ressourcen gefunden' : 'No resources found')}</p>`;
     return;
   }
 
@@ -426,7 +455,7 @@ function renderGrid() {
       } else if (state.langMode === 'en') {
         card.querySelector('.card-description').innerHTML = highlight(item.description_en || t.noDescription, state.search);
         descEn.remove();
-      } else if (state.lang === 'ru' && item.description_en) {
+      } else if (state.lang !== 'en' && item.description_en) {
         descEn.textContent = `${t.translatedFrom}: ${item.description_en}`;
       } else {
         descEn.remove();
@@ -478,9 +507,11 @@ function renderStats() {
 
 function renderCompare() {
   const picks = state.compare.map((id) => state.flat.find((x) => x.id === id)).filter(Boolean).slice(0, 4);
-  els.compareTitle.textContent = (state.lang === 'ru' ? 'Сравнение' : 'Compare') + ` (${picks.length}/4)`;
+  const compareLabel = state.lang === 'ru' ? 'Сравнение' : (state.lang === 'de' ? 'Vergleich' : 'Compare');
+  els.compareTitle.textContent = `${compareLabel} (${picks.length}/4)`;
   if (!picks.length) {
-    els.compareTableWrap.innerHTML = `<p class="muted">${state.lang === 'ru' ? 'Добавь карточки кнопкой Cmp' : 'Add cards with Cmp button'}</p>`;
+    const hint = state.lang === 'ru' ? 'Добавь карточки кнопкой Cmp' : (state.lang === 'de' ? 'Füge Karten über Cmp hinzu' : 'Add cards with Cmp button');
+    els.compareTableWrap.innerHTML = `<p class="muted">${hint}</p>`;
     return;
   }
   const header = picks.map((x) => `<th>${esc(x.name)}</th>`).join('');
@@ -498,7 +529,8 @@ function renderCalculators() {
   const matCost = (g / 1000) * priceKg;
   const powerCost = ((powerW * h) / 1000) * kwh;
   const total = matCost + powerCost;
-  els.costResult.textContent = (state.lang === 'ru' ? 'Оценка: ' : 'Estimate: ') + total.toFixed(2);
+  const estimate = state.lang === 'ru' ? 'Оценка: ' : (state.lang === 'de' ? 'Schätzung: ' : 'Estimate: ');
+  els.costResult.textContent = estimate + total.toFixed(2);
 
   const layer = Math.max(0.01, num('timeLayer'));
   const height = Math.max(1, num('timeHeight'));
@@ -507,7 +539,9 @@ function renderCalculators() {
   const layers = height / layer;
   const sec = (layers * path) / speed;
   const hours = sec / 3600;
-  els.timeResult.textContent = (state.lang === 'ru' ? 'Время: ' : 'Time: ') + hours.toFixed(2) + (state.lang === 'ru' ? ' ч' : ' h');
+  const timeLabel = state.lang === 'ru' ? 'Время: ' : (state.lang === 'de' ? 'Zeit: ' : 'Time: ');
+  const hoursLabel = state.lang === 'ru' ? ' ч' : ' h';
+  els.timeResult.textContent = timeLabel + hours.toFixed(2) + hoursLabel;
 }
 
 function toggleFavorite(id) {
@@ -622,9 +656,13 @@ function reportBroken(item) {
 
 function buildAnalysis(item) {
   const pros = item.tags.slice(0, 2).join(', ');
-  const cons = item.level === 'pro' ? (state.lang === 'ru' ? 'высокий порог входа' : 'higher learning curve') : (state.lang === 'ru' ? 'ограниченные продвинутые фичи' : 'fewer advanced controls');
-  const who = state.lang === 'ru' ? `Кому: ${item.level}` : `For: ${item.level}`;
-  return `${state.lang === 'ru' ? 'Плюсы' : 'Pros'}: ${pros}. ${state.lang === 'ru' ? 'Минусы' : 'Cons'}: ${cons}. ${who}.`;
+  const cons = item.level === 'pro'
+    ? (state.lang === 'ru' ? 'высокий порог входа' : (state.lang === 'de' ? 'höhere Einstiegshürde' : 'higher learning curve'))
+    : (state.lang === 'ru' ? 'ограниченные продвинутые фичи' : (state.lang === 'de' ? 'weniger fortgeschrittene Optionen' : 'fewer advanced controls'));
+  const who = state.lang === 'ru' ? `Кому: ${item.level}` : (state.lang === 'de' ? `Für: ${item.level}` : `For: ${item.level}`);
+  const prosLabel = state.lang === 'ru' ? 'Плюсы' : (state.lang === 'de' ? 'Vorteile' : 'Pros');
+  const consLabel = state.lang === 'ru' ? 'Минусы' : (state.lang === 'de' ? 'Nachteile' : 'Cons');
+  return `${prosLabel}: ${pros}. ${consLabel}: ${cons}. ${who}.`;
 }
 
 function findSimilar(item) {
@@ -637,7 +675,7 @@ function findSimilar(item) {
     .map((m) => m.x);
 }
 async function syncFromGithub() {
-  els.syncStatus.textContent = state.lang === 'ru' ? 'Синхронизация...' : 'Syncing...';
+  els.syncStatus.textContent = state.lang === 'ru' ? 'Синхронизация...' : (state.lang === 'de' ? 'Synchronisierung...' : 'Syncing...');
   try {
     const res = await fetch('https://raw.githubusercontent.com/ad-si/awesome-3d-printing/main/readme.md');
     if (!res.ok) throw new Error('bad');
@@ -659,10 +697,12 @@ async function syncFromGithub() {
     storage.setItem(LS.lastSync, new Date().toISOString());
     state.data = enrichData(next);
     renderAll();
-    els.syncStatus.textContent = state.lang === 'ru' ? 'Синхронизировано' : 'Synced';
-    els.diffStatus.textContent = `${state.lang === 'ru' ? 'Добавлено' : 'Added'}: ${added.length}, ${state.lang === 'ru' ? 'Удалено' : 'Removed'}: ${removed.length}`;
+    const addedLabel = state.lang === 'ru' ? 'Добавлено' : (state.lang === 'de' ? 'Hinzugefügt' : 'Added');
+    const removedLabel = state.lang === 'ru' ? 'Удалено' : (state.lang === 'de' ? 'Entfernt' : 'Removed');
+    els.syncStatus.textContent = state.lang === 'ru' ? 'Синхронизировано' : (state.lang === 'de' ? 'Synchronisiert' : 'Synced');
+    els.diffStatus.textContent = `${addedLabel}: ${added.length}, ${removedLabel}: ${removed.length}`;
   } catch (_) {
-    els.syncStatus.textContent = state.lang === 'ru' ? 'Ошибка синхронизации' : 'Sync failed';
+    els.syncStatus.textContent = state.lang === 'ru' ? 'Ошибка синхронизации' : (state.lang === 'de' ? 'Synchronisierung fehlgeschlagen' : 'Sync failed');
   }
 }
 
@@ -743,14 +783,15 @@ function updateSEO() {
 }
 
 function cycleTheme() {
-  const seq = ['default', 'neon', 'industrial'];
+  const seq = ['mono', 'neon', 'industrial'];
   state.theme = seq[(seq.indexOf(state.theme) + 1) % seq.length];
   storage.setItem(LS.theme, state.theme);
   applyTheme();
 }
 
 function applyTheme() {
-  document.body.classList.remove('theme-neon', 'theme-industrial');
+  document.body.classList.remove('theme-mono', 'theme-neon', 'theme-industrial');
+  if (state.theme === 'mono') document.body.classList.add('theme-mono');
   if (state.theme === 'neon') document.body.classList.add('theme-neon');
   if (state.theme === 'industrial') document.body.classList.add('theme-industrial');
   if (els.themeToggle) els.themeToggle.textContent = `Theme:${state.theme}`;
