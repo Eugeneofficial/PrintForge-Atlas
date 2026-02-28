@@ -381,7 +381,7 @@ textarea:focus {
   color: color-mix(in srgb, var(--bg) 95%, white);
 }
 
-.panel-grid { margin-top: 10px; display: grid; grid-template-columns: repeat(2, minmax(280px, 1fr)); gap: 10px; }
+.panel-grid { margin-top: 10px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .panel { border-radius: 16px; padding: 13px; }
 .panel h2 { margin: 0 0 8px; font-size: 1.1rem; letter-spacing: -0.01em; }
 .panel h3 { margin: 0 0 8px; font-size: 0.97rem; }
@@ -389,18 +389,24 @@ textarea:focus {
 .stack-grid,
 .calc-grid { display: grid; gap: 8px; }
 .stack-grid { grid-template-columns: repeat(2, minmax(120px, 1fr)); }
-.calc-grid { grid-template-columns: repeat(2, minmax(150px, 1fr)); }
+.calc-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .calc-suite {
   display: grid;
-  grid-template-columns: repeat(2, minmax(280px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
+  min-width: 0;
 }
 .calc-card {
   border: 1px solid var(--line);
   border-radius: 14px;
   padding: 10px;
   background: color-mix(in srgb, var(--paper-strong) 94%, transparent);
+  min-width: 0;
+  overflow: hidden;
 }
+.calc-grid label { min-width: 0; }
+.calc-grid input,
+.calc-grid select { min-width: 0; }
 .calc-breakdown {
   margin-top: 10px;
   display: grid;
