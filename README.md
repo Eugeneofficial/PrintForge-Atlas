@@ -1,133 +1,135 @@
 ﻿# PrintForge Atlas
 
-Production-ready bilingual (RU/EN) web catalog of 3D-printing resources, built from the curated upstream list [`ad-si/awesome-3d-printing`](https://github.com/ad-si/awesome-3d-printing).
+Professional bilingual/trilingual static catalog for 3D-printing resources, built from the curated upstream list:
+[`ad-si/awesome-3d-printing`](https://github.com/ad-si/awesome-3d-printing).
 
-## Overview
-PrintForge Atlas is a static web application optimized for public hosting on GitHub Pages.
-It provides structured discovery of tools, brands, firmware, materials, services, and marketplaces for the 3D-printing ecosystem.
+Live repository:
+- <https://github.com/Eugeneofficial/PrintForge-Atlas>
 
-Key goals:
-- Deliver a clean and fast resource directory with strong filtering/search UX
-- Support Russian and English content workflows
-- Work reliably in static hosting environments without backend dependencies
-- Be simple to maintain and update from the upstream source list
+## Product Summary
+PrintForge Atlas is a frontend-only web application designed for GitHub Pages hosting.
+It organizes 3D-printing ecosystem resources (brands, CAD tools, firmware, slicers, services, materials) into a searchable and filterable atlas.
 
-## Core Features
-- Bilingual UI and content display modes (`RU`, `EN`, `BOTH`)
-- Full-text search with match highlighting
-- Filters by section, tags, level, and printer type
-- Sorting by relevance/name/popularity/update score
-- Favorites, history, and comparison mode (up to 4 items)
+## Key Capabilities
+- Interface languages: `EN`, `RU`, `DE`
+- Content display modes: `RU`, `EN`, `BOTH`
+- Full-text search with highlighting
+- Filters: section, tag, level, printer type
+- Sorting: relevance, A-Z, popularity, updated
+- Favorites, history, and compare mode (up to 4 cards)
 - Stack builder (Printer + CAD + Slicer + Firmware)
-- Cost and time calculators
-- Export tools (Markdown, JSON, PDF/print)
-- Import/export favorites JSON
-- Runtime error banner for easier debugging
-- Upstream sync from GitHub README with change delta (added/removed)
+- Calculators (print cost and estimated print time)
+- Export: Markdown, JSON, PDF/print
+- Import/Export favorites (JSON)
+- Upstream sync from GitHub README + delta (added/removed)
 - PWA baseline (manifest + service worker)
+- Two eye-friendly themes: `Light` and `Dark`
 
 ## Tech Stack
-- HTML5 + CSS3 + Vanilla JavaScript
-- Static JSON/inline dataset
-- GitHub Actions for deployment
-- GitHub Pages for hosting
+- HTML5
+- CSS3
+- Vanilla JavaScript
+- GitHub Actions (deploy)
+- GitHub Pages (hosting)
 
-No framework or server runtime is required.
+No backend, framework runtime, or database required.
 
-## Project Structure
+## Repository Structure
 ```text
 .
 ├─ .github/workflows/
-│  └─ deploy-pages.yml        # GitHub Pages deployment pipeline
+│  └─ deploy-pages.yml        # GitHub Pages deployment workflow
 ├─ data/
-│  ├─ resources.json          # Structured dataset
-│  └─ resources-inline.js     # Inline dataset fallback for static/file contexts
-├─ app.js                     # Main application logic
-├─ styles.css                 # UI styling and responsive behavior
+│  ├─ resources.json          # Parsed dataset
+│  └─ resources-inline.js     # Inline fallback dataset
 ├─ index.html                 # Entry page
-├─ 404.html                   # GitHub Pages fallback
-├─ service-worker.js          # Offline/cache support
+├─ styles.css                 # UI and themes
+├─ app.js                     # Application logic
+├─ service-worker.js          # Caching/offline behavior
 ├─ manifest.webmanifest       # PWA metadata
+├─ 404.html                   # GitHub Pages fallback
 ├─ icon.svg                   # App icon
+├─ LICENSE
 └─ README.md
 ```
 
-## Local Development
-Run a local static server (recommended instead of `file://`):
-
+## Local Run
 ```powershell
 cd C:\Users\mrjek\Desktop\NewSite
 python -m http.server 4173
 ```
 
 Open:
-- `http://127.0.0.1:4173/`
+- <http://127.0.0.1:4173/>
 
 ## Deployment (GitHub Pages)
-This repository is configured for automatic deployment via GitHub Actions.
+This repo is configured for deployment via GitHub Actions.
 
-### 1) Push to `main`
+1. Push to `main`
 ```powershell
 git add .
-git commit -m "docs: update professional README"
+git commit -m "chore: release update"
 git push
 ```
 
-### 2) Enable Pages source
-In GitHub repository settings:
-- `Settings` -> `Pages`
-- Source: `GitHub Actions`
+2. In GitHub:
+- `Settings` -> `Pages` -> `Source: GitHub Actions`
+- `Settings` -> `Actions` -> `Workflow permissions: Read and write`
 
-### 3) Verify deployment
-- `Actions` tab: workflow `Deploy Static Site to GitHub Pages` must pass
-- Site URL format:
-  `https://<username>.github.io/<repository>/`
+3. Verify workflow success:
+- `Actions` tab -> `Deploy Static Site to GitHub Pages`
 
-For this repository:
-- `https://eugeneofficial.github.io/PrintForge-Atlas/`
+Expected site URL:
+- <https://eugeneofficial.github.io/PrintForge-Atlas/>
 
-## Data Source and Update Policy
-Primary source:
-- [`ad-si/awesome-3d-printing`](https://github.com/ad-si/awesome-3d-printing)
+## Attribution and Source Credits
+Primary source dataset and structure inspiration:
+- **Project:** `awesome-3d-printing`
+- **Author:** `ad-si`
+- **Repository:** <https://github.com/ad-si/awesome-3d-printing>
+- **License:** CC0 1.0 Universal
+- **License URL:** <https://creativecommons.org/publicdomain/zero/1.0/>
 
-Recommended update flow:
-1. Sync upstream data in app UI (Sync button)
-2. Validate filters/search/cards
-3. Commit and push to `main`
-4. Confirm successful Pages deployment
+Additional reference:
+- Awesome list standard by Sindre Sorhus: <https://github.com/sindresorhus/awesome>
 
-## Quality Checklist Before Release
-- No runtime error banner in browser
-- RU/EN switching works
-- Search, filters, and sorting work
-- External links open correctly
-- Service worker updates are applied (hard refresh after deploy)
-- GitHub Actions deployment is green
+Important note:
+- PrintForge Atlas is an independent presentation layer and is **not an official mirror** of the upstream project.
+
+## Compliance Notes
+- Upstream links are preserved as external references.
+- Upstream license attribution is explicitly documented in this README and in `LICENSE`.
+- This project does not claim ownership over upstream resource entries.
+
+## Operations Checklist
+Before publishing updates:
+- Confirm no runtime error banner
+- Validate EN/RU/DE switching
+- Validate Light/Dark theme toggle
+- Validate search/filter/sort behavior
+- Validate upstream sync and external links
+- Confirm GitHub Actions deploy is green
 
 ## Troubleshooting
-### Repository push returns "Repository not found"
-- Ensure remote URL matches exact repository name and case
-- Ensure repository exists under the expected owner
+### Pages workflow fails on "Setup Pages"
+- Ensure `Settings -> Pages -> Source: GitHub Actions`
+- Ensure `Settings -> Actions -> Workflow permissions: Read and write`
 
-### Git commit fails due to identity
-Configure git user:
+### Browser shows old UI after deploy
+- Hard refresh (`Ctrl+F5`)
+- If needed, unregister service worker and reload
+
+### Git identity errors on commit
 ```powershell
 git config user.name "Eugeneofficial"
 git config user.email "abramovplay@gmail.com"
 ```
 
-### Page looks outdated after deploy
-- Hard refresh (`Ctrl+F5`)
-- If needed, unregister service worker in browser devtools and reload
-
 ## Security and Privacy
-- No backend, no server-side data processing
+- No backend data processing
+- No analytics pipeline by default
 - User preferences are stored locally in browser storage
-- No personal data collection pipeline is included by default
 
 ## License
-This project is distributed under the CC0 1.0 Universal license (see [`LICENSE`](./LICENSE)).
-Official text: <https://creativecommons.org/publicdomain/zero/1.0/>
-
-Upstream dataset attribution:
-- `awesome-3d-printing` by `ad-si` (CC0-1.0)
+This project uses **CC0 1.0 Universal**.
+See [`LICENSE`](./LICENSE).
