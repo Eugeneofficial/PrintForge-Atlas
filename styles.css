@@ -201,7 +201,8 @@ h1 {
   display: grid;
   gap: 8px;
   max-height: calc(100vh - 26px);
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   padding: 6px;
   background: var(--paper);
   border: 1px solid var(--line);
@@ -209,7 +210,13 @@ h1 {
   box-shadow: var(--shadow);
   backdrop-filter: blur(8px);
 }
-.sidebar .section-chip { width: 100%; text-align: left; }
+.sidebar .section-chip {
+  width: 100%;
+  min-width: 0;
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
 .main-col { min-width: 0; }
 
 .controls,
