@@ -443,10 +443,12 @@ textarea:focus {
   margin-top: 12px;
   border-radius: 16px;
   padding: 9px;
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
   gap: 8px;
-  overflow: hidden;
+  max-width: 100%;
+  overflow-x: hidden;
+  overflow-y: visible;
 }
 
 .section-chip {
@@ -455,7 +457,10 @@ textarea:focus {
   background: color-mix(in srgb, var(--paper-strong) 92%, transparent);
   color: var(--ink);
   padding: 8px 12px;
-  white-space: nowrap;
+  white-space: normal;
+  width: 100%;
+  min-width: 0;
+  text-align: center;
   font-size: 0.83rem;
   cursor: pointer;
 }
