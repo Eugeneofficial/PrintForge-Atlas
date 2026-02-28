@@ -190,6 +190,7 @@ const storage = (() => {
 const storedLang = storage.getItem(LS.lang);
 const initialLang = LANGS.includes(storedLang) ? storedLang : 'en';
 const storedTheme = storage.getItem(LS.theme);
+const storedIntroSound = storage.getItem(LS.introSound);
 const initialTheme = ['light', 'dark'].includes(storedTheme)
   ? storedTheme
   : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
@@ -199,7 +200,8 @@ const state = {
   langMode: storage.getItem(LS.langMode) || 'both',
   theme: initialTheme,
   introSeen: storage.getItem(LS.introSeen) === '1',
-  introSound: storage.getItem(LS.introSound) === '1',
+  introSound: storedIntroSound === null ? true : storedIntroSound === '1',
+  introUnlockArmed: false,
   search: '',
   section: 'all',
   sort: 'relevance',
@@ -372,6 +374,7 @@ function bindIntroEvents() {
   els.introSoundBtn?.addEventListener('click', () => setIntroSound(true, true));
   els.introEnterBtn?.addEventListener('click', () => closeIntro(false));
   els.introSkipBtn?.addEventListener('click', () => closeIntro(true));
+  armIntroSoundUnlock();
   video?.addEventListener('ended', () => {
     video.currentTime = 0;
     video.play().catch(() => {});
@@ -975,6 +978,7 @@ function renderIntro() {
     els.introVideo.loop = true;
     els.introVideo.currentTime = 0;
     els.introVideo.play().catch(() => {});
+    armIntroSoundUnlock();
   }
   setIntroSound(state.introSound, false);
 }
@@ -992,6 +996,16 @@ function closeIntro(skipNextTime) {
 window.__atlasEnterIntro = () => closeIntro(false);
 window.__atlasSkipIntro = () => closeIntro(true);
 window.__atlasIntroSound = () => setIntroSound(true, true);
+
+function armIntroSoundUnlock() {
+  if (state.introUnlockArmed || !state.introSound || state.introSeen) return;
+  state.introUnlockArmed = true;
+  const unlock = () => setIntroSound(true, true);
+  const opts = { once: true, passive: true };
+  window.addEventListener('pointerdown', unlock, opts);
+  window.addEventListener('touchstart', unlock, opts);
+  window.addEventListener('keydown', unlock, opts);
+}
 
 function setIntroSound(on, fromUser) {
   const video = els.introVideo;
