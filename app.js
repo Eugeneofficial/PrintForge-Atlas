@@ -254,6 +254,7 @@ init().catch((err) => showRuntimeError(err?.message || String(err)));
 
 function bindEls() {
   return {
+    themeWipe: byId('themeWipe'),
     introScreen: byId('introScreen'), introVideo: byId('introVideo'), introTitle: byId('introTitle'), introSubtitle: byId('introSubtitle'), introSoundBtn: byId('introSoundBtn'), introEnterBtn: byId('introEnterBtn'), introSkipBtn: byId('introSkipBtn'),
     heroTitle: byId('heroTitle'), heroSubtitle: byId('heroSubtitle'), sourceBadge: byId('sourceBadge'), stats: byId('stats'),
     langSelect: byId('langSelect'), themeToggle: byId('themeToggle'), syncBtn: byId('syncBtn'), syncStatus: byId('syncStatus'), diffStatus: byId('diffStatus'), lastUpdated: byId('lastUpdated'), checkLinksBtn: byId('checkLinksBtn'), suggestBtn: byId('suggestBtn'),
@@ -1194,10 +1195,37 @@ function updateSEO() {
   ld.textContent = JSON.stringify({ '@context': 'https://schema.org', '@type': 'CollectionPage', name: title, description: desc, inLanguage: state.lang });
 }
 
-function cycleTheme() {
-  state.theme = state.theme === 'dark' ? 'light' : 'dark';
-  storage.setItem(LS.theme, state.theme);
-  applyTheme();
+function cycleTheme(event) {
+  const nextTheme = state.theme === 'dark' ? 'light' : 'dark';
+  const reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const wipe = els.themeWipe;
+  if (!wipe || reduceMotion) {
+    state.theme = nextTheme;
+    storage.setItem(LS.theme, state.theme);
+    applyTheme();
+    return;
+  }
+
+  const rect = els.themeToggle?.getBoundingClientRect();
+  const x = Number.isFinite(event?.clientX) ? event.clientX : (rect ? rect.left + (rect.width / 2) : (window.innerWidth / 2));
+  const y = Number.isFinite(event?.clientY) ? event.clientY : (rect ? rect.top + (rect.height / 2) : (window.innerHeight / 2));
+  wipe.style.setProperty('--wipe-x', `${x}px`);
+  wipe.style.setProperty('--wipe-y', `${y}px`);
+  wipe.classList.remove('active', 'to-dark', 'to-light');
+  void wipe.offsetWidth;
+  wipe.classList.add(nextTheme === 'dark' ? 'to-dark' : 'to-light');
+  wipe.classList.add('active');
+
+  window.setTimeout(() => {
+    state.theme = nextTheme;
+    storage.setItem(LS.theme, state.theme);
+    applyTheme();
+  }, 250);
+
+  wipe.onanimationend = () => {
+    wipe.classList.remove('active', 'to-dark', 'to-light');
+    wipe.onanimationend = null;
+  };
 }
 
 function applyTheme() {
