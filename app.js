@@ -134,7 +134,7 @@ const LS = {
   history: 'atlas:history',
   compare: 'atlas:compare',
   linkHealth: 'atlas:linkHealth',
-  introSeen: 'atlas:introSeen',
+  introSeen: 'atlas:introSeen:v2',
   introSound: 'atlas:introSound',
   theme: 'atlas:theme',
   lang: 'atlas:lang',
@@ -368,12 +368,19 @@ function bindEvents() {
 
 function bindIntroEvents() {
   if (!els.introScreen) return;
+  const video = els.introVideo;
   els.introSoundBtn?.addEventListener('click', () => setIntroSound(true, true));
   els.introEnterBtn?.addEventListener('click', () => closeIntro(false));
   els.introSkipBtn?.addEventListener('click', () => closeIntro(true));
-  els.introVideo?.addEventListener('ended', () => {
-    els.introVideo.currentTime = 0;
-    els.introVideo.play().catch(() => {});
+  video?.addEventListener('ended', () => {
+    video.currentTime = 0;
+    video.play().catch(() => {});
+  });
+  video?.addEventListener('timeupdate', () => {
+    if (video.duration && (video.duration - video.currentTime) < 0.06) {
+      video.currentTime = 0;
+      video.play().catch(() => {});
+    }
   });
 }
 
@@ -966,6 +973,7 @@ function renderIntro() {
   document.body.classList.toggle('intro-active', show);
   if (show && els.introVideo) {
     els.introVideo.loop = true;
+    els.introVideo.currentTime = 0;
     els.introVideo.play().catch(() => {});
   }
   setIntroSound(state.introSound, false);
@@ -978,6 +986,7 @@ function closeIntro(skipNextTime) {
   }
   els.introScreen.hidden = true;
   document.body.classList.remove('intro-active');
+  els.introVideo?.pause();
 }
 
 window.__atlasEnterIntro = () => closeIntro(false);
