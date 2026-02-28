@@ -202,6 +202,7 @@ const state = {
   introSeen: storage.getItem(LS.introSeen) === '1',
   introSound: storedIntroSound === null ? true : storedIntroSound === '1',
   introUnlockArmed: false,
+  introSoundUnlocked: false,
   search: '',
   section: 'all',
   sort: 'relevance',
@@ -1000,11 +1001,16 @@ window.__atlasIntroSound = () => setIntroSound(true, true);
 function armIntroSoundUnlock() {
   if (state.introUnlockArmed || !state.introSound || state.introSeen) return;
   state.introUnlockArmed = true;
-  const unlock = () => setIntroSound(true, true);
-  const opts = { once: true, passive: true };
+  const opts = { passive: true };
+  const unlock = () => {
+    if (state.introSoundUnlocked) return;
+    state.introSoundUnlocked = true;
+    window.removeEventListener('pointerdown', unlock, opts);
+    window.removeEventListener('touchstart', unlock, opts);
+    setIntroSound(true, true);
+  };
   window.addEventListener('pointerdown', unlock, opts);
   window.addEventListener('touchstart', unlock, opts);
-  window.addEventListener('keydown', unlock, opts);
 }
 
 function setIntroSound(on, fromUser) {
@@ -1016,9 +1022,10 @@ function setIntroSound(on, fromUser) {
   if (!state.introSound) {
     video.muted = true;
   } else if (canUnmuteNow) {
+    state.introSoundUnlocked = true;
     video.muted = false;
     video.volume = 1;
-    video.play().catch(() => {});
+    if (video.paused) video.play().catch(() => {});
   } else {
     // Keep muted until a real user gesture; avoids browser autoplay warnings.
     video.muted = true;

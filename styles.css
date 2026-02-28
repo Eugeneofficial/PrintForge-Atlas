@@ -401,8 +401,9 @@ textarea:focus {
   border-radius: 16px;
   padding: 9px;
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
-  overflow: auto;
+  overflow: hidden;
 }
 
 .section-chip {
