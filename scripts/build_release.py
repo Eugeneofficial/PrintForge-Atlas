@@ -1,9 +1,8 @@
-﻿import os
 import re
 import shutil
 from pathlib import Path
 
-ROOT = Path(r'c:\Users\mrjek\Desktop\NewSite')
+ROOT = Path(__file__).resolve().parents[1]
 DIST = ROOT / 'dist'
 
 if DIST.exists():
