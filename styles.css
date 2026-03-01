@@ -57,6 +57,11 @@ body {
   overflow-x: hidden;
 }
 
+#appShell,
+.main-col {
+  overflow-x: clip;
+}
+
 body.theme-dark {
   background:
     radial-gradient(1200px 700px at -12% -15%, rgba(255, 255, 255, 0.05) 0%, transparent 62%),
@@ -636,9 +641,11 @@ textarea:focus {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  align-content: flex-start;
   gap: 8px;
   max-width: 100%;
-  overflow: visible;
+  overflow-x: clip;
+  overflow-y: visible;
 }
 
 .section-chip {
@@ -648,9 +655,12 @@ textarea:focus {
   color: var(--ink);
   padding: 8px 12px;
   white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
   width: auto;
   max-width: 100%;
-  min-width: min(170px, 100%);
+  min-width: 0;
+  flex: 0 1 auto;
   text-align: center;
   font-size: 0.83rem;
   cursor: pointer;
