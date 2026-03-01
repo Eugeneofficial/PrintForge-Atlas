@@ -1,13 +1,8 @@
 ﻿# PrintForge Atlas
 
-[![Deploy](https://github.com/Eugeneofficial/PrintForge-Atlas/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/Eugeneofficial/PrintForge-Atlas/actions/workflows/deploy-pages.yml)
-[![Pages](https://img.shields.io/badge/pages-online-black)](https://eugeneofficial.github.io/PrintForge-Atlas/)
 [![License: CC0-1.0](https://img.shields.io/badge/license-CC0--1.0-lightgrey)](https://creativecommons.org/publicdomain/zero/1.0/)
 
 PrintForge Atlas is a production-ready static web application that organizes the 3D printing ecosystem into a searchable, filterable, multilingual knowledge atlas.
-
-Live site: <https://eugeneofficial.github.io/PrintForge-Atlas/>
-Repository: <https://github.com/Eugeneofficial/PrintForge-Atlas>
 
 ## Overview
 
@@ -54,22 +49,6 @@ No backend, database, or framework runtime is required.
 - `scripts/validate_resources.js` - dataset consistency checks
 - `scripts/build_release.py` - `dist/` release bundle generator
 - `tests/smoke.test.js` - parser and content smoke checks
-
-## Local Development
-
-### Prerequisites
-
-- Node.js 20+
-- Python 3.10+
-
-### Run locally
-
-```powershell
-cd C:\Users\mrjek\Desktop\NewSite
-python -m http.server 4173
-```
-
-Open: <http://127.0.0.1:4173/>
 
 ## Quality Gates
 

@@ -397,7 +397,7 @@ function bindEvents() {
   els.themeToggle.addEventListener('click', cycleTheme);
   els.syncBtn.addEventListener('click', syncFromGithub);
   els.checkLinksBtn.addEventListener('click', checkVisibleLinks);
-  els.suggestBtn.addEventListener('click', () => window.open('https://github.com/Eugeneofficial/PrintForge-Atlas/issues/new?template=resource_suggestion.yml', '_blank'));
+  els.suggestBtn.addEventListener('click', () => window.open(buildSuggestionIssueUrl(), '_blank'));
 
   els.searchInput.addEventListener('input', (e) => {
     clearTimeout(state.searchTimer);
@@ -1011,6 +1011,18 @@ function reportBroken(item) {
   const title = encodeURIComponent(`Broken link: ${item.name}`);
   const body = encodeURIComponent(`Resource: ${item.name}\nURL: ${item.url}\nSection: ${item.section_en}`);
   window.open(`https://github.com/ad-si/awesome-3d-printing/issues/new?title=${title}&body=${body}`, '_blank');
+}
+
+function buildSuggestionIssueUrl() {
+  try {
+    const p = String(location.pathname || '/').split('/').filter(Boolean);
+    if (location.hostname.endsWith('github.io') && p.length >= 1) {
+      const owner = location.hostname.split('.')[0];
+      const repo = p[0];
+      return `https://github.com/${owner}/${repo}/issues/new?template=resource_suggestion.yml`;
+    }
+  } catch (_) {}
+  return 'https://github.com/issues/new';
 }
 
 function buildAnalysis(item) {
