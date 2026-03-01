@@ -124,6 +124,8 @@ body.theme-dark {
   font-family: "JetBrains Mono", monospace;
   font-size: clamp(13px, 1.55vw, 22px);
   letter-spacing: 0.02em;
+  line-height: 1.35;
+  text-wrap: balance;
   text-shadow: 0 0 12px rgba(255, 255, 255, 0.22);
   opacity: 0;
   will-change: opacity, transform;
@@ -253,6 +255,7 @@ body.theme-dark {
   .theme-blink-quote {
     top: calc(50% + min(26vw, 170px));
     font-size: clamp(12px, 2.8vw, 16px);
+    width: min(94vw, 760px);
   }
 }
 
@@ -608,6 +611,11 @@ textarea:focus {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+}
+.calc-preset-row .mini-btn.is-active {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--ink) 55%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ink) 22%, transparent);
 }
 
 .table-wrap { overflow: auto; }

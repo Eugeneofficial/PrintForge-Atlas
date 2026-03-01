@@ -273,6 +273,7 @@ const state = {
   compare: loadJSON(LS.compare, []),
   linkHealth: loadJSON(LS.linkHealth, {}),
   calcComputedHours: 0,
+  calcSaveTimer: null,
   themeAnimating: false,
   themeTimers: [],
   lastThemeQuote: '',
@@ -317,6 +318,8 @@ async function init() {
   renderAll();
   registerSW();
   applyHashTarget();
+  window.addEventListener('visibilitychange', onVisibilityChange);
+  window.addEventListener('beforeunload', clearThemeTimers);
 }
 
 function showRuntimeError(message) {
@@ -428,22 +431,25 @@ function bindEvents() {
     if (!el) return;
     const onCalcChange = () => {
       renderCalculators();
-      saveCalcPreset();
+      scheduleCalcPresetSave();
     };
     el.addEventListener('input', onCalcChange);
     el.addEventListener('change', onCalcChange);
   });
-  byId('calcSavePresetBtn')?.addEventListener('click', saveCalcPreset);
+  byId('calcSavePresetBtn')?.addEventListener('click', () => {
+    saveCalcPreset();
+    flashCalcAction(byId('calcSavePresetBtn'));
+  });
   byId('calcResetPresetBtn')?.addEventListener('click', resetCalcPreset);
   byId('calcUseTimeBtn')?.addEventListener('click', () => {
     byId('calcHours').value = state.calcComputedHours.toFixed(2);
     renderCalculators();
-    saveCalcPreset();
+    scheduleCalcPresetSave();
   });
   document.querySelectorAll('.calc-preset').forEach((btn) => {
     btn.addEventListener('click', () => {
       applyCalcPreset(btn.dataset.calcProfile || 'balanced');
-      saveCalcPreset();
+      scheduleCalcPresetSave();
     });
   });
 
@@ -1236,7 +1242,7 @@ function cycleTheme(event) {
   const nextTheme = state.theme === 'dark' ? 'light' : 'dark';
   const reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const blink = els.themeBlink;
-  if (!blink || reduceMotion) {
+  if (!blink || reduceMotion || document.hidden) {
     state.theme = nextTheme;
     storage.setItem(LS.theme, state.theme);
     applyTheme();
@@ -1326,6 +1332,30 @@ function scheduleTheme(fn, delay) {
 function clearThemeTimers() {
   state.themeTimers.forEach((id) => window.clearTimeout(id));
   state.themeTimers = [];
+}
+
+function onVisibilityChange() {
+  if (!document.hidden || !state.themeAnimating) return;
+  clearThemeTimers();
+  const blink = els.themeBlink;
+  if (blink) {
+    blink.classList.remove('active', 'preclosed', 'preblink', 'anim-open', 'anim-close', 'show-quote', 'hide-quote', 'variant-a', 'variant-b', 'variant-c');
+  }
+  state.themeAnimating = false;
+}
+
+function scheduleCalcPresetSave() {
+  if (state.calcSaveTimer) window.clearTimeout(state.calcSaveTimer);
+  state.calcSaveTimer = window.setTimeout(() => {
+    saveCalcPreset();
+    state.calcSaveTimer = null;
+  }, 220);
+}
+
+function flashCalcAction(btn) {
+  if (!btn) return;
+  btn.classList.add('is-active');
+  window.setTimeout(() => btn.classList.remove('is-active'), 220);
 }
 
 function applyTheme() {
