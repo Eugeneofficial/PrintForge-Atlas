@@ -239,10 +239,6 @@ body.theme-dark {
   100% { transform: translate(var(--pupil-x), var(--pupil-y)); }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .theme-blink { display: none; }
-}
-
 @media (max-width: 900px) {
   .theme-eye-stage {
     gap: clamp(30px, 8vw, 70px);

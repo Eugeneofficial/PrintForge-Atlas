@@ -8,6 +8,10 @@
 
 PrintForge Atlas is a production-grade static web application that turns the 3D-printing ecosystem into a multilingual, searchable, and operationally useful knowledge atlas.
 
+## Live Demo
+
+- Production URL: <https://eugeneofficial.github.io/PrintForge-Atlas/>
+
 ## Product Scope
 
 - Multilingual interface: `EN`, `RU`, `DE`

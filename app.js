@@ -1468,9 +1468,8 @@ function updateSEO() {
 function cycleTheme(event) {
   if (state.themeAnimating) return;
   const nextTheme = state.theme === 'dark' ? 'light' : 'dark';
-  const reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const blink = els.themeBlink;
-  if (!blink || reduceMotion || document.hidden) {
+  if (!blink || document.hidden) {
     state.theme = nextTheme;
     storage.setItem(LS.theme, state.theme);
     applyTheme();
