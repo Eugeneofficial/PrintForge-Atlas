@@ -270,6 +270,17 @@
   </template>
   </div>
   <button id="toTopBtn" class="to-top-btn" type="button" aria-label="Scroll to top">↑</button>
+  <div id="hotkeyHintCard" class="hotkey-hint-card" hidden>
+    <div class="hotkey-hint-head">
+      <strong id="hotkeyHintTitle">Hotkeys</strong>
+      <button id="hotkeyHintDismissBtn" class="mini-btn hotkey-hint-dismiss" type="button" aria-label="Dismiss">×</button>
+    </div>
+    <div class="hotkey-hint-row">
+      <span class="hotkey-chip"><kbd>/</kbd><small id="hotkeyHintSearch">Search</small></span>
+      <span class="hotkey-chip"><kbd>T</kbd><small id="hotkeyHintTheme">Theme</small></span>
+      <button id="hotkeyHintOpenBtn" class="mini-btn hotkey-hint-open" type="button">?</button>
+    </div>
+  </div>
   <div id="toastRoot" class="toast-root" aria-live="polite" aria-atomic="true"></div>
   <div id="hotkeyModal" class="hotkey-modal" hidden>
     <div class="hotkey-dialog" role="dialog" aria-modal="true" aria-labelledby="hotkeyTitle">

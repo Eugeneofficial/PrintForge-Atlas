@@ -144,6 +144,7 @@ const LS = {
   lastSync: 'atlas:lastSync',
   density: 'atlas:density',
   collapsedSections: 'atlas:collapsedSections',
+  hotkeyHintDismissed: 'atlas:hotkeyHintDismissed',
 };
 
 const introCopy = {
@@ -280,8 +281,10 @@ const state = {
   themeTimers: [],
   lastThemeQuote: '',
   toastTimer: null,
+  hintTimer: null,
   density: storage.getItem(LS.density) || 'cozy',
   collapsedSections: loadJSON(LS.collapsedSections, []),
+  hotkeyHintDismissed: storage.getItem(LS.hotkeyHintDismissed) === '1',
 };
 
 const els = bindEls();
@@ -311,6 +314,7 @@ function bindEls() {
     guideTitle: byId('guideTitle'), guideList: byId('guideList'), mistakesTitle: byId('mistakesTitle'), mistakesList: byId('mistakesList'),
     sidebar: byId('sidebar'), sectionNav: byId('sectionNav'), grid: byId('grid'), template: byId('cardTemplate'), favFileInput: byId('favFileInput'), presetRow: byId('presetRow'),
     toTopBtn: byId('toTopBtn'), toastRoot: byId('toastRoot'), hotkeyModal: byId('hotkeyModal'), hotkeyCloseBtn: byId('hotkeyCloseBtn'), hotkeyList: byId('hotkeyList'),
+    hotkeyHintCard: byId('hotkeyHintCard'), hotkeyHintTitle: byId('hotkeyHintTitle'), hotkeyHintSearch: byId('hotkeyHintSearch'), hotkeyHintTheme: byId('hotkeyHintTheme'), hotkeyHintOpenBtn: byId('hotkeyHintOpenBtn'), hotkeyHintDismissBtn: byId('hotkeyHintDismissBtn'),
   };
 }
 
@@ -328,6 +332,7 @@ async function init() {
   window.addEventListener('beforeunload', clearThemeTimers);
   applyDensity();
   renderHotkeyHints();
+  updateHotkeyHintVisibility();
 }
 
 function showRuntimeError(message) {
@@ -438,6 +443,8 @@ function bindEvents() {
   els.compareExportCsvBtn?.addEventListener('click', exportCompareCsv);
   els.toTopBtn?.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
   els.hotkeyCloseBtn?.addEventListener('click', closeHotkeysModal);
+  els.hotkeyHintOpenBtn?.addEventListener('click', openHotkeysModal);
+  els.hotkeyHintDismissBtn?.addEventListener('click', dismissHotkeyHint);
   els.hotkeyModal?.addEventListener('click', (event) => {
     if (event.target === els.hotkeyModal) closeHotkeysModal();
   });
@@ -534,6 +541,7 @@ function renderAll() {
   localizePresets();
   localizeExtraUi();
   renderHotkeyHints();
+  updateHotkeyHintVisibility();
 
   renderFilters();
   renderSidebarAndNav();
@@ -553,6 +561,10 @@ function localizeExtraUi() {
       csv: 'Export CSV',
       close: 'Close',
       shortcuts: 'Keyboard Shortcuts',
+      hintTitle: 'Hotkeys',
+      hintSearch: 'Search',
+      hintTheme: 'Theme',
+      hintOpen: 'More',
     },
     ru: {
       clear: 'Сброс фильтров',
@@ -562,6 +574,10 @@ function localizeExtraUi() {
       csv: 'Экспорт CSV',
       close: 'Закрыть',
       shortcuts: 'Горячие клавиши',
+      hintTitle: 'Горячие клавиши',
+      hintSearch: 'Поиск',
+      hintTheme: 'Тема',
+      hintOpen: 'Ещё',
     },
     de: {
       clear: 'Filter zurücksetzen',
@@ -571,6 +587,10 @@ function localizeExtraUi() {
       csv: 'Export CSV',
       close: 'Schließen',
       shortcuts: 'Tastenkürzel',
+      hintTitle: 'Hotkeys',
+      hintSearch: 'Suche',
+      hintTheme: 'Theme',
+      hintOpen: 'Mehr',
     },
   }[state.lang] || {};
   if (els.clearFiltersBtn) els.clearFiltersBtn.textContent = dict.clear || 'Clear Filters';
@@ -580,6 +600,10 @@ function localizeExtraUi() {
   if (els.hotkeyCloseBtn) els.hotkeyCloseBtn.textContent = dict.close || 'Close';
   const title = byId('hotkeyTitle');
   if (title) title.textContent = dict.shortcuts || 'Keyboard Shortcuts';
+  if (els.hotkeyHintTitle) els.hotkeyHintTitle.textContent = dict.hintTitle || 'Hotkeys';
+  if (els.hotkeyHintSearch) els.hotkeyHintSearch.textContent = dict.hintSearch || 'Search';
+  if (els.hotkeyHintTheme) els.hotkeyHintTheme.textContent = dict.hintTheme || 'Theme';
+  if (els.hotkeyHintOpenBtn) els.hotkeyHintOpenBtn.textContent = dict.hintOpen || 'More';
 }
 
 function renderFilters() {
@@ -1089,12 +1113,40 @@ function onWindowScroll() {
 
 function openHotkeysModal() {
   if (!els.hotkeyModal) return;
+  if (els.introScreen && !els.introScreen.hidden) return;
   els.hotkeyModal.hidden = false;
 }
 
 function closeHotkeysModal() {
   if (!els.hotkeyModal) return;
   els.hotkeyModal.hidden = true;
+}
+
+function dismissHotkeyHint() {
+  state.hotkeyHintDismissed = true;
+  storage.setItem(LS.hotkeyHintDismissed, '1');
+  if (state.hintTimer) {
+    window.clearTimeout(state.hintTimer);
+    state.hintTimer = null;
+  }
+  if (els.hotkeyHintCard) els.hotkeyHintCard.hidden = true;
+}
+
+function updateHotkeyHintVisibility() {
+  if (!els.hotkeyHintCard) return;
+  const introVisible = !!(els.introScreen && !els.introScreen.hidden);
+  if (introVisible || state.hotkeyHintDismissed) {
+    els.hotkeyHintCard.hidden = true;
+    closeHotkeysModal();
+    return;
+  }
+  if (state.hintTimer) window.clearTimeout(state.hintTimer);
+  state.hintTimer = window.setTimeout(() => {
+    if (state.hotkeyHintDismissed) return;
+    const stillIntroVisible = !!(els.introScreen && !els.introScreen.hidden);
+    els.hotkeyHintCard.hidden = stillIntroVisible;
+    state.hintTimer = null;
+  }, 320);
 }
 
 function renderHotkeyHints() {
@@ -1120,6 +1172,7 @@ function renderHotkeyHints() {
 
 function handleGlobalKeydown(event) {
   if (event.defaultPrevented) return;
+  if (els.introScreen && !els.introScreen.hidden) return;
   const target = event.target;
   const isTyping = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT' || target.isContentEditable);
   if (event.key === 'Escape') {
@@ -1386,6 +1439,7 @@ function renderIntro() {
   const show = !state.introSeen;
   els.introScreen.hidden = !show;
   document.body.classList.toggle('intro-active', show);
+  if (show) closeHotkeysModal();
   if (show && els.introVideo) {
     els.introVideo.loop = true;
     els.introVideo.currentTime = 0;
@@ -1393,6 +1447,7 @@ function renderIntro() {
     armIntroSoundUnlock();
   }
   setIntroSound(state.introSound, false);
+  updateHotkeyHintVisibility();
 }
 
 function closeIntro(skipNextTime) {
@@ -1403,6 +1458,7 @@ function closeIntro(skipNextTime) {
   els.introScreen.hidden = true;
   document.body.classList.remove('intro-active');
   els.introVideo?.pause();
+  updateHotkeyHintVisibility();
 }
 
 window.__atlasEnterIntro = () => closeIntro(false);

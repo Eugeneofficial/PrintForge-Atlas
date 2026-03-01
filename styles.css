@@ -52,6 +52,11 @@ body {
   min-height: 100vh;
 }
 
+html,
+body {
+  overflow-x: hidden;
+}
+
 body.theme-dark {
   background:
     radial-gradient(1200px 700px at -12% -15%, rgba(255, 255, 255, 0.05) 0%, transparent 62%),
@@ -628,12 +633,12 @@ textarea:focus {
   margin-top: 12px;
   border-radius: 16px;
   padding: 9px;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
   max-width: 100%;
-  overflow-x: hidden;
-  overflow-y: visible;
+  overflow: visible;
 }
 
 .section-chip {
@@ -643,8 +648,9 @@ textarea:focus {
   color: var(--ink);
   padding: 8px 12px;
   white-space: normal;
-  width: 100%;
-  min-width: 0;
+  width: auto;
+  max-width: 100%;
+  min-width: min(170px, 100%);
   text-align: center;
   font-size: 0.83rem;
   cursor: pointer;
@@ -759,9 +765,15 @@ select:focus-visible {
   .sidebar {
     position: static;
     max-height: none;
-    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    overflow: visible;
+    display: flex;
+    flex-wrap: wrap;
   }
   .controls { grid-template-columns: repeat(2, minmax(170px, 1fr)); }
+  .sidebar .section-chip {
+    width: auto;
+    min-width: min(170px, 100%);
+  }
 }
 
 @media (max-width: 760px) {
@@ -828,6 +840,66 @@ select:focus-visible {
   pointer-events: auto;
 }
 
+.hotkey-hint-card {
+  position: fixed;
+  right: 18px;
+  bottom: 68px;
+  z-index: 1190;
+  width: min(280px, calc(100vw - 24px));
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--paper-strong);
+  box-shadow: var(--shadow);
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+}
+.hotkey-hint-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.hotkey-hint-head strong {
+  font-size: 0.88rem;
+}
+.hotkey-hint-dismiss {
+  padding: 4px 8px;
+  line-height: 1;
+}
+.hotkey-hint-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.hotkey-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 8px;
+  background: var(--paper);
+}
+.hotkey-chip kbd {
+  border: 1px solid var(--line);
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  padding: 1px 6px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  background: color-mix(in srgb, var(--paper-strong) 92%, transparent);
+}
+.hotkey-chip small {
+  font-size: 11px;
+  color: var(--muted);
+}
+.hotkey-hint-open {
+  margin-left: auto;
+  min-width: 46px;
+  padding: 6px 8px;
+}
+
 .hotkey-modal {
   position: fixed;
   inset: 0;
@@ -885,4 +957,12 @@ body.density-compact .card-description,
 body.density-compact .card-description-en,
 body.density-compact .card-analysis {
   font-size: 0.84rem;
+}
+
+@media (max-width: 760px) {
+  .hotkey-hint-card {
+    right: 10px;
+    bottom: 62px;
+    width: calc(100vw - 20px);
+  }
 }
