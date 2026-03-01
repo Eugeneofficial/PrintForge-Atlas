@@ -1,83 +1,132 @@
 ﻿# PrintForge Atlas
+
 [![Deploy](https://github.com/Eugeneofficial/PrintForge-Atlas/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/Eugeneofficial/PrintForge-Atlas/actions/workflows/deploy-pages.yml)
 [![Pages](https://img.shields.io/badge/pages-online-black)](https://eugeneofficial.github.io/PrintForge-Atlas/)
 [![License: CC0-1.0](https://img.shields.io/badge/license-CC0--1.0-lightgrey)](https://creativecommons.org/publicdomain/zero/1.0/)
 
-Professional bilingual/trilingual static catalog for 3D-printing resources, built from the curated upstream list:
-[`ad-si/awesome-3d-printing`](https://github.com/ad-si/awesome-3d-printing).
+PrintForge Atlas is a production-ready static web application that organizes the 3D printing ecosystem into a searchable, filterable, multilingual knowledge atlas.
 
-Live repository:
-- <https://github.com/Eugeneofficial/PrintForge-Atlas>
+Live site: <https://eugeneofficial.github.io/PrintForge-Atlas/>
+Repository: <https://github.com/Eugeneofficial/PrintForge-Atlas>
 
-## Product Summary
-PrintForge Atlas is a frontend-only web application designed for GitHub Pages hosting.
-It organizes 3D-printing ecosystem resources (brands, CAD tools, firmware, slicers, services, materials) into a searchable and filterable atlas.
+## Overview
 
-## Key Capabilities
-- Interface languages: `EN`, `RU`, `DE`
-- Content display modes: `RU`, `EN`, `BOTH`
+The project is built from the curated upstream list [`ad-si/awesome-3d-printing`](https://github.com/ad-si/awesome-3d-printing) and adds a complete user interface layer:
+
+- structured browsing by section
+- language-aware descriptions
+- practical filtering and comparison workflows
+- local-first personalization (favorites, history, presets)
+- static deployment to GitHub Pages with CI checks
+
+No backend, database, or framework runtime is required.
+
+## Core Features
+
+- UI languages: `EN`, `RU`, `DE`
+- Rich filtering: section, tags, level, printer type
+- Sorting modes: relevance, A-Z, popularity, updated
 - Full-text search with highlighting
-- Filters: section, tag, level, printer type
-- Sorting: relevance, A-Z, popularity, updated
-- Favorites, history, and compare mode (up to 4 cards)
-- Stack builder (Printer + CAD + Slicer + Firmware)
-- Calculators (print cost and estimated print time)
-- Export: Markdown, JSON, PDF/print
-- Import/Export favorites (JSON)
-- Upstream sync from GitHub README + delta (added/removed)
-- PWA baseline (manifest + service worker)
-- Two eye-friendly themes: `Light` and `Dark`
+- Favorites, history, compare mode (up to 4 tools)
+- Stack builder (`Printer + CAD + Slicer + Firmware`)
+- Advanced print calculators:
+  - cost breakdown (material, energy, amortization, margin)
+  - time estimation with presets and overhead
+  - multi-currency output (`USD`, `EUR`, `RUB`)
+- Import/export:
+  - favorites JSON
+  - visible data JSON
+  - Markdown
+  - PDF/print view
+- Sync from upstream GitHub README with delta stats (added/removed)
+- Link health badges (`OK`, `FAIL`, `UNKNOWN`) for checked resources
+- Light/Dark themes with cinematic eye-style transition animation
+- PWA baseline: `manifest.webmanifest` + `service-worker.js`
 
-## Tech Stack
-- HTML5
-- CSS3
-- Vanilla JavaScript
-- GitHub Actions (deploy)
-- GitHub Pages (hosting)
+## Architecture
 
-No backend, framework runtime, or database required.
+- `index.html` - document structure and UI containers
+- `styles.css` - themes, layout, animation system
+- `app.js` - state, rendering, sync/parser logic, calculators
+- `config.js` - externalized i18n labels
+- `data/resources.json` - canonical generated dataset
+- `data/resources-inline.js` - inline fallback dataset
+- `scripts/validate_resources.js` - dataset consistency checks
+- `scripts/build_release.py` - `dist/` release bundle generator
+- `tests/smoke.test.js` - parser and content smoke checks
 
-## Repository Structure
-```text
-.
-├─ .github/workflows/
-│  └─ deploy-pages.yml        # GitHub Pages deployment workflow
-├─ data/
-│  ├─ resources.json          # Parsed dataset
-│  └─ resources-inline.js     # Inline fallback dataset
-├─ index.html                 # Entry page
-├─ styles.css                 # UI and themes
-├─ app.js                     # Application logic
-├─ service-worker.js          # Caching/offline behavior
-├─ manifest.webmanifest       # PWA metadata
-├─ 404.html                   # GitHub Pages fallback
-├─ icon.svg                   # App icon
-├─ LICENSE
-└─ README.md
+## Local Development
+
+### Prerequisites
+
+- Node.js 20+
+- Python 3.10+
+
+### Run locally
+
+```powershell
+cd C:\Users\mrjek\Desktop\NewSite
+python -m http.server 4173
 ```
 
-## Attribution and Source Credits
-Primary source dataset and structure inspiration:
-- **Project:** `awesome-3d-printing`
-- **Author:** `ad-si`
-- **Repository:** <https://github.com/ad-si/awesome-3d-printing>
-- **License:** CC0 1.0 Universal
-- **License URL:** <https://creativecommons.org/publicdomain/zero/1.0/>
+Open: <http://127.0.0.1:4173/>
 
-Additional reference:
-- Awesome list standard by Sindre Sorhus: <https://github.com/sindresorhus/awesome>
+## Quality Gates
 
-Important note:
-- PrintForge Atlas is an independent presentation layer and is **not an official mirror** of the upstream project.
+Run before release:
 
-## Compliance Notes
-- Upstream links are preserved as external references.
-- Upstream license attribution is explicitly documented in this README and in `LICENSE`.
-- This project does not claim ownership over upstream resource entries.
+```powershell
+node scripts/validate_resources.js
+node tests/smoke.test.js
+python scripts/build_release.py
+```
 
-## Project Docs
-- Changelog: [`CHANGELOG.md`](./CHANGELOG.md)
+Expected output:
+
+- `resources validation passed`
+- `smoke tests passed`
+- `dist build complete`
+
+## Deployment
+
+This repository deploys via GitHub Actions workflow:
+
+- file: `.github/workflows/deploy-pages.yml`
+- artifact source: `./dist`
+- target: GitHub Pages
+
+Required repository settings:
+
+1. `Settings -> Pages -> Source: GitHub Actions`
+2. `Settings -> Actions -> Workflow permissions: Read and write`
+
+## Data Source and Attribution
+
+Primary upstream data source:
+
+- Project: [`ad-si/awesome-3d-printing`](https://github.com/ad-si/awesome-3d-printing)
+- Author: `ad-si`
+- License: `CC0 1.0 Universal`
+- License URL: <https://creativecommons.org/publicdomain/zero/1.0/>
+
+Reference ecosystem standard:
+
+- Sindre Sorhus Awesome List: <https://github.com/sindresorhus/awesome>
+
+PrintForge Atlas is an independent presentation layer and is not an official mirror of the upstream project.
+
+## Compliance
+
+- Upstream links are preserved and referenced as external resources.
+- Attribution is documented in this README and in [`LICENSE`](./LICENSE).
+- No ownership claims are made over upstream entries.
+
+## Changelog
+
+See [`CHANGELOG.md`](./CHANGELOG.md) for release history.
 
 ## License
-This project uses **CC0 1.0 Universal**.
+
+This project is licensed under **CC0 1.0 Universal**.
+
 See [`LICENSE`](./LICENSE).
