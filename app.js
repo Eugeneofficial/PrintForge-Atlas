@@ -307,14 +307,14 @@ function bindEls() {
     sortLabel: byId('sortLabel'), sortSelect: byId('sortSelect'), tagLabel: byId('tagLabel'), tagFilter: byId('tagFilter'),
     levelLabel: byId('levelLabel'), levelFilter: byId('levelFilter'), typeLabel: byId('typeLabel'), typeFilter: byId('typeFilter'),
     showFavBtn: byId('showFavBtn'), showHistoryBtn: byId('showHistoryBtn'), randomBtn: byId('randomBtn'), beginnerBtn: byId('beginnerBtn'), langModeBtn: byId('langModeBtn'),
-    exportMdBtn: byId('exportMdBtn'), exportJsonBtn: byId('exportJsonBtn'), exportPdfBtn: byId('exportPdfBtn'), importFavBtn: byId('importFavBtn'), exportFavBtn: byId('exportFavBtn'), densityBtn: byId('densityBtn'), hotkeysBtn: byId('hotkeysBtn'),
+    exportMdBtn: byId('exportMdBtn'), exportJsonBtn: byId('exportJsonBtn'), exportPdfBtn: byId('exportPdfBtn'), importFavBtn: byId('importFavBtn'), exportFavBtn: byId('exportFavBtn'), densityBtn: byId('densityBtn'),
     stackTitle: byId('stackTitle'), stackPrinter: byId('stackPrinter'), stackCad: byId('stackCad'), stackSlicer: byId('stackSlicer'), stackFirmware: byId('stackFirmware'), stackResult: byId('stackResult'),
     compareTitle: byId('compareTitle'), compareTableWrap: byId('compareTableWrap'), compareExportCsvBtn: byId('compareExportCsvBtn'),
     costResult: byId('costResult'), timeResult: byId('timeResult'),
     guideTitle: byId('guideTitle'), guideList: byId('guideList'), mistakesTitle: byId('mistakesTitle'), mistakesList: byId('mistakesList'),
     sidebar: byId('sidebar'), sectionNav: byId('sectionNav'), grid: byId('grid'), template: byId('cardTemplate'), favFileInput: byId('favFileInput'), presetRow: byId('presetRow'),
-    toTopBtn: byId('toTopBtn'), toastRoot: byId('toastRoot'), hotkeyModal: byId('hotkeyModal'), hotkeyCloseBtn: byId('hotkeyCloseBtn'), hotkeyList: byId('hotkeyList'),
-    hotkeyHintCard: byId('hotkeyHintCard'), hotkeyHintTitle: byId('hotkeyHintTitle'), hotkeyHintSearch: byId('hotkeyHintSearch'), hotkeyHintTheme: byId('hotkeyHintTheme'), hotkeyHintOpenBtn: byId('hotkeyHintOpenBtn'), hotkeyHintDismissBtn: byId('hotkeyHintDismissBtn'),
+    toTopBtn: byId('toTopBtn'), toastRoot: byId('toastRoot'),
+    hotkeyHintCard: byId('hotkeyHintCard'), hotkeyHintTitle: byId('hotkeyHintTitle'), hotkeyHintSearch: byId('hotkeyHintSearch'), hotkeyHintTheme: byId('hotkeyHintTheme'), hotkeyHintDismissBtn: byId('hotkeyHintDismissBtn'),
   };
 }
 
@@ -331,7 +331,6 @@ async function init() {
   window.addEventListener('visibilitychange', onVisibilityChange);
   window.addEventListener('beforeunload', clearThemeTimers);
   applyDensity();
-  renderHotkeyHints();
   updateHotkeyHintVisibility();
 }
 
@@ -439,15 +438,9 @@ function bindEvents() {
   els.importFavBtn.addEventListener('click', () => els.favFileInput.click());
   els.favFileInput.addEventListener('change', importFavorites);
   els.densityBtn?.addEventListener('click', toggleDensity);
-  els.hotkeysBtn?.addEventListener('click', openHotkeysModal);
   els.compareExportCsvBtn?.addEventListener('click', exportCompareCsv);
   els.toTopBtn?.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-  els.hotkeyCloseBtn?.addEventListener('click', closeHotkeysModal);
-  els.hotkeyHintOpenBtn?.addEventListener('click', openHotkeysModal);
   els.hotkeyHintDismissBtn?.addEventListener('click', dismissHotkeyHint);
-  els.hotkeyModal?.addEventListener('click', (event) => {
-    if (event.target === els.hotkeyModal) closeHotkeysModal();
-  });
   window.addEventListener('scroll', onWindowScroll, { passive: true });
   document.addEventListener('keydown', handleGlobalKeydown);
 
@@ -540,7 +533,6 @@ function renderAll() {
   }
   localizePresets();
   localizeExtraUi();
-  renderHotkeyHints();
   updateHotkeyHintVisibility();
 
   renderFilters();
@@ -557,53 +549,36 @@ function localizeExtraUi() {
       clear: 'Clear Filters',
       densityCozy: 'Density:Cozy',
       densityCompact: 'Density:Compact',
-      hotkeys: 'Hotkeys',
       csv: 'Export CSV',
-      close: 'Close',
-      shortcuts: 'Keyboard Shortcuts',
       hintTitle: 'Hotkeys',
       hintSearch: 'Search',
       hintTheme: 'Theme',
-      hintOpen: 'More',
     },
     ru: {
       clear: 'Сброс фильтров',
       densityCozy: 'Плотность:Комфорт',
       densityCompact: 'Плотность:Компакт',
-      hotkeys: 'Горячие клавиши',
       csv: 'Экспорт CSV',
-      close: 'Закрыть',
-      shortcuts: 'Горячие клавиши',
       hintTitle: 'Горячие клавиши',
       hintSearch: 'Поиск',
       hintTheme: 'Тема',
-      hintOpen: 'Ещё',
     },
     de: {
       clear: 'Filter zurücksetzen',
       densityCozy: 'Dichte:Komfort',
       densityCompact: 'Dichte:Kompakt',
-      hotkeys: 'Hotkeys',
       csv: 'Export CSV',
-      close: 'Schließen',
-      shortcuts: 'Tastenkürzel',
       hintTitle: 'Hotkeys',
       hintSearch: 'Suche',
       hintTheme: 'Theme',
-      hintOpen: 'Mehr',
     },
   }[state.lang] || {};
   if (els.clearFiltersBtn) els.clearFiltersBtn.textContent = dict.clear || 'Clear Filters';
   if (els.densityBtn) els.densityBtn.textContent = state.density === 'compact' ? (dict.densityCompact || 'Density:Compact') : (dict.densityCozy || 'Density:Cozy');
-  if (els.hotkeysBtn) els.hotkeysBtn.textContent = dict.hotkeys || 'Hotkeys';
   if (els.compareExportCsvBtn) els.compareExportCsvBtn.textContent = dict.csv || 'Export CSV';
-  if (els.hotkeyCloseBtn) els.hotkeyCloseBtn.textContent = dict.close || 'Close';
-  const title = byId('hotkeyTitle');
-  if (title) title.textContent = dict.shortcuts || 'Keyboard Shortcuts';
   if (els.hotkeyHintTitle) els.hotkeyHintTitle.textContent = dict.hintTitle || 'Hotkeys';
   if (els.hotkeyHintSearch) els.hotkeyHintSearch.textContent = dict.hintSearch || 'Search';
   if (els.hotkeyHintTheme) els.hotkeyHintTheme.textContent = dict.hintTheme || 'Theme';
-  if (els.hotkeyHintOpenBtn) els.hotkeyHintOpenBtn.textContent = dict.hintOpen || 'More';
 }
 
 function renderFilters() {
@@ -1111,17 +1086,6 @@ function onWindowScroll() {
   els.toTopBtn.classList.toggle('show', window.scrollY > 340);
 }
 
-function openHotkeysModal() {
-  if (!els.hotkeyModal) return;
-  if (els.introScreen && !els.introScreen.hidden) return;
-  els.hotkeyModal.hidden = false;
-}
-
-function closeHotkeysModal() {
-  if (!els.hotkeyModal) return;
-  els.hotkeyModal.hidden = true;
-}
-
 function dismissHotkeyHint() {
   state.hotkeyHintDismissed = true;
   storage.setItem(LS.hotkeyHintDismissed, '1');
@@ -1137,7 +1101,6 @@ function updateHotkeyHintVisibility() {
   const introVisible = !!(els.introScreen && !els.introScreen.hidden);
   if (introVisible || state.hotkeyHintDismissed) {
     els.hotkeyHintCard.hidden = true;
-    closeHotkeysModal();
     return;
   }
   if (state.hintTimer) window.clearTimeout(state.hintTimer);
@@ -1149,45 +1112,16 @@ function updateHotkeyHintVisibility() {
   }, 320);
 }
 
-function renderHotkeyHints() {
-  if (!els.hotkeyList) return;
-  const labels = {
-    en: ['Focus search', 'Toggle theme', 'Favorites mode', 'History mode', 'Random resource', 'Beginner mode', 'Hotkeys help', 'Close modal'],
-    ru: ['Фокус на поиск', 'Сменить тему', 'Режим избранного', 'Режим истории', 'Случайный ресурс', 'Режим новичка', 'Справка по клавишам', 'Закрыть окно'],
-    de: ['Suche fokussieren', 'Theme wechseln', 'Favoritenmodus', 'Verlaufsmodus', 'Zufällige Ressource', 'Anfängermodus', 'Hotkeys Hilfe', 'Fenster schließen'],
-  };
-  const map = labels[state.lang] || labels.en;
-  const items = [
-    ['/', map[0]],
-    ['T', map[1]],
-    ['F', map[2]],
-    ['H', map[3]],
-    ['R', map[4]],
-    ['B', map[5]],
-    ['?', map[6]],
-    ['Esc', map[7]],
-  ];
-  els.hotkeyList.innerHTML = items.map(([k, d]) => `<li><kbd>${esc(k)}</kbd><span>${esc(d)}</span></li>`).join('');
-}
-
 function handleGlobalKeydown(event) {
   if (event.defaultPrevented) return;
   if (els.introScreen && !els.introScreen.hidden) return;
   const target = event.target;
   const isTyping = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT' || target.isContentEditable);
-  if (event.key === 'Escape') {
-    closeHotkeysModal();
-    return;
-  }
+  if (event.key === 'Escape') return;
   if (isTyping) return;
   if (event.key === '/') {
     event.preventDefault();
     els.searchInput?.focus();
-    return;
-  }
-  if (event.key === '?') {
-    event.preventDefault();
-    openHotkeysModal();
     return;
   }
   const key = String(event.key || '').toLowerCase();
@@ -1439,7 +1373,6 @@ function renderIntro() {
   const show = !state.introSeen;
   els.introScreen.hidden = !show;
   document.body.classList.toggle('intro-active', show);
-  if (show) closeHotkeysModal();
   if (show && els.introVideo) {
     els.introVideo.loop = true;
     els.introVideo.currentTime = 0;
