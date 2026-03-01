@@ -142,6 +142,8 @@ const LS = {
   langMode: 'atlas:langMode',
   dataCache: 'atlas:dataCache',
   lastSync: 'atlas:lastSync',
+  density: 'atlas:density',
+  collapsedSections: 'atlas:collapsedSections',
 };
 
 const introCopy = {
@@ -277,6 +279,9 @@ const state = {
   themeAnimating: false,
   themeTimers: [],
   lastThemeQuote: '',
+  toastTimer: null,
+  density: storage.getItem(LS.density) || 'cozy',
+  collapsedSections: loadJSON(LS.collapsedSections, []),
 };
 
 const els = bindEls();
@@ -294,17 +299,18 @@ function bindEls() {
     themeBlinkQuote: byId('themeBlinkQuote'),
     introScreen: byId('introScreen'), introVideo: byId('introVideo'), introTitle: byId('introTitle'), introSubtitle: byId('introSubtitle'), introSoundBtn: byId('introSoundBtn'), introEnterBtn: byId('introEnterBtn'), introSkipBtn: byId('introSkipBtn'),
     heroTitle: byId('heroTitle'), heroSubtitle: byId('heroSubtitle'), sourceBadge: byId('sourceBadge'), stats: byId('stats'),
-    langSelect: byId('langSelect'), themeToggle: byId('themeToggle'), syncBtn: byId('syncBtn'), syncStatus: byId('syncStatus'), diffStatus: byId('diffStatus'), lastUpdated: byId('lastUpdated'), checkLinksBtn: byId('checkLinksBtn'), suggestBtn: byId('suggestBtn'),
+    langSelect: byId('langSelect'), themeToggle: byId('themeToggle'), syncBtn: byId('syncBtn'), syncStatus: byId('syncStatus'), diffStatus: byId('diffStatus'), lastUpdated: byId('lastUpdated'), checkLinksBtn: byId('checkLinksBtn'), suggestBtn: byId('suggestBtn'), clearFiltersBtn: byId('clearFiltersBtn'),
     searchLabel: byId('searchLabel'), searchInput: byId('searchInput'), sectionLabel: byId('sectionLabel'), sectionFilter: byId('sectionFilter'),
     sortLabel: byId('sortLabel'), sortSelect: byId('sortSelect'), tagLabel: byId('tagLabel'), tagFilter: byId('tagFilter'),
     levelLabel: byId('levelLabel'), levelFilter: byId('levelFilter'), typeLabel: byId('typeLabel'), typeFilter: byId('typeFilter'),
     showFavBtn: byId('showFavBtn'), showHistoryBtn: byId('showHistoryBtn'), randomBtn: byId('randomBtn'), beginnerBtn: byId('beginnerBtn'), langModeBtn: byId('langModeBtn'),
-    exportMdBtn: byId('exportMdBtn'), exportJsonBtn: byId('exportJsonBtn'), exportPdfBtn: byId('exportPdfBtn'), importFavBtn: byId('importFavBtn'), exportFavBtn: byId('exportFavBtn'),
+    exportMdBtn: byId('exportMdBtn'), exportJsonBtn: byId('exportJsonBtn'), exportPdfBtn: byId('exportPdfBtn'), importFavBtn: byId('importFavBtn'), exportFavBtn: byId('exportFavBtn'), densityBtn: byId('densityBtn'), hotkeysBtn: byId('hotkeysBtn'),
     stackTitle: byId('stackTitle'), stackPrinter: byId('stackPrinter'), stackCad: byId('stackCad'), stackSlicer: byId('stackSlicer'), stackFirmware: byId('stackFirmware'), stackResult: byId('stackResult'),
-    compareTitle: byId('compareTitle'), compareTableWrap: byId('compareTableWrap'),
+    compareTitle: byId('compareTitle'), compareTableWrap: byId('compareTableWrap'), compareExportCsvBtn: byId('compareExportCsvBtn'),
     costResult: byId('costResult'), timeResult: byId('timeResult'),
     guideTitle: byId('guideTitle'), guideList: byId('guideList'), mistakesTitle: byId('mistakesTitle'), mistakesList: byId('mistakesList'),
     sidebar: byId('sidebar'), sectionNav: byId('sectionNav'), grid: byId('grid'), template: byId('cardTemplate'), favFileInput: byId('favFileInput'), presetRow: byId('presetRow'),
+    toTopBtn: byId('toTopBtn'), toastRoot: byId('toastRoot'), hotkeyModal: byId('hotkeyModal'), hotkeyCloseBtn: byId('hotkeyCloseBtn'), hotkeyList: byId('hotkeyList'),
   };
 }
 
@@ -320,6 +326,8 @@ async function init() {
   applyHashTarget();
   window.addEventListener('visibilitychange', onVisibilityChange);
   window.addEventListener('beforeunload', clearThemeTimers);
+  applyDensity();
+  renderHotkeyHints();
 }
 
 function showRuntimeError(message) {
@@ -398,6 +406,7 @@ function bindEvents() {
   els.syncBtn.addEventListener('click', syncFromGithub);
   els.checkLinksBtn.addEventListener('click', checkVisibleLinks);
   els.suggestBtn.addEventListener('click', () => window.open(buildSuggestionIssueUrl(), '_blank'));
+  els.clearFiltersBtn?.addEventListener('click', clearAllFilters);
 
   els.searchInput.addEventListener('input', (e) => {
     clearTimeout(state.searchTimer);
@@ -424,6 +433,16 @@ function bindEvents() {
   els.exportFavBtn.addEventListener('click', exportFavorites);
   els.importFavBtn.addEventListener('click', () => els.favFileInput.click());
   els.favFileInput.addEventListener('change', importFavorites);
+  els.densityBtn?.addEventListener('click', toggleDensity);
+  els.hotkeysBtn?.addEventListener('click', openHotkeysModal);
+  els.compareExportCsvBtn?.addEventListener('click', exportCompareCsv);
+  els.toTopBtn?.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  els.hotkeyCloseBtn?.addEventListener('click', closeHotkeysModal);
+  els.hotkeyModal?.addEventListener('click', (event) => {
+    if (event.target === els.hotkeyModal) closeHotkeysModal();
+  });
+  window.addEventListener('scroll', onWindowScroll, { passive: true });
+  document.addEventListener('keydown', handleGlobalKeydown);
 
   const calcIds = ['calcWeight', 'calcPriceKg', 'calcPower', 'calcHours', 'calcKwh', 'calcMarkup', 'calcCurrency', 'calcPrinterPrice', 'calcPrinterLifeHours', 'calcFailureRate', 'timeLayer', 'timeHeight', 'timeSpeed', 'timePath', 'timeOverhead'];
   calcIds.forEach((id) => {
@@ -513,6 +532,8 @@ function renderAll() {
     els.lastUpdated.textContent = `${t.extra.lastUpdated}: ${formatDate(state.data.generated_at)}`;
   }
   localizePresets();
+  localizeExtraUi();
+  renderHotkeyHints();
 
   renderFilters();
   renderSidebarAndNav();
@@ -520,6 +541,45 @@ function renderAll() {
   renderDataViews();
   renderCalculators();
   updateSEO();
+}
+
+function localizeExtraUi() {
+  const dict = {
+    en: {
+      clear: 'Clear Filters',
+      densityCozy: 'Density:Cozy',
+      densityCompact: 'Density:Compact',
+      hotkeys: 'Hotkeys',
+      csv: 'Export CSV',
+      close: 'Close',
+      shortcuts: 'Keyboard Shortcuts',
+    },
+    ru: {
+      clear: 'Сброс фильтров',
+      densityCozy: 'Плотность:Комфорт',
+      densityCompact: 'Плотность:Компакт',
+      hotkeys: 'Горячие клавиши',
+      csv: 'Экспорт CSV',
+      close: 'Закрыть',
+      shortcuts: 'Горячие клавиши',
+    },
+    de: {
+      clear: 'Filter zurücksetzen',
+      densityCozy: 'Dichte:Komfort',
+      densityCompact: 'Dichte:Kompakt',
+      hotkeys: 'Hotkeys',
+      csv: 'Export CSV',
+      close: 'Schließen',
+      shortcuts: 'Tastenkürzel',
+    },
+  }[state.lang] || {};
+  if (els.clearFiltersBtn) els.clearFiltersBtn.textContent = dict.clear || 'Clear Filters';
+  if (els.densityBtn) els.densityBtn.textContent = state.density === 'compact' ? (dict.densityCompact || 'Density:Compact') : (dict.densityCozy || 'Density:Cozy');
+  if (els.hotkeysBtn) els.hotkeysBtn.textContent = dict.hotkeys || 'Hotkeys';
+  if (els.compareExportCsvBtn) els.compareExportCsvBtn.textContent = dict.csv || 'Export CSV';
+  if (els.hotkeyCloseBtn) els.hotkeyCloseBtn.textContent = dict.close || 'Close';
+  const title = byId('hotkeyTitle');
+  if (title) title.textContent = dict.shortcuts || 'Keyboard Shortcuts';
 }
 
 function renderFilters() {
@@ -697,9 +757,12 @@ function renderGrid() {
     const block = document.createElement('section');
     block.className = 'section-block';
     block.id = `section-${section.slug}`;
-    block.innerHTML = `<h2 class="section-title">${esc(pickLang(section.title_en, section.title_ru, section.title_de))} <button class="mini-btn section-link-btn" type="button" data-section-link="${esc(block.id)}">#</button></h2><p class="section-guide">${esc(sectionGuides[section.title_en]?.[state.lang] || pickLang(section.title_en, section.title_ru, section.title_de))}</p>`;
+    const collapsed = isSectionCollapsed(section.title_en);
+    const collapseLabel = collapsed ? '+' : '-';
+    block.innerHTML = `<h2 class="section-title">${esc(pickLang(section.title_en, section.title_ru, section.title_de))} <button class="mini-btn section-collapse-btn" type="button" data-section-collapse="${esc(section.title_en)}" aria-expanded="${collapsed ? 'false' : 'true'}">${collapseLabel}</button> <button class="mini-btn section-link-btn" type="button" data-section-link="${esc(block.id)}">#</button></h2><p class="section-guide">${esc(sectionGuides[section.title_en]?.[state.lang] || pickLang(section.title_en, section.title_ru, section.title_de))}</p>`;
     const list = document.createElement('div');
     list.className = 'resource-grid';
+    if (collapsed) list.hidden = true;
 
     section.items.forEach((item, idx) => {
       const card = els.template.content.firstElementChild.cloneNode(true);
@@ -773,9 +836,15 @@ function renderGrid() {
     });
 
     block.appendChild(list);
+    block.querySelector('.section-collapse-btn')?.addEventListener('click', (event) => {
+      const sectionName = event.currentTarget.dataset.sectionCollapse;
+      toggleSectionCollapsed(sectionName);
+      renderDataViews();
+    });
     block.querySelector('.section-link-btn')?.addEventListener('click', (event) => {
       const id = event.currentTarget.dataset.sectionLink;
       copyText(`${location.origin}${location.pathname}#${id}`);
+      showToast(state.lang === 'ru' ? 'Ссылка на раздел скопирована' : (state.lang === 'de' ? 'Bereichslink kopiert' : 'Section link copied'));
       location.hash = id;
     });
     els.grid.appendChild(block);
@@ -805,6 +874,7 @@ function renderCompare() {
   const header = picks.map((x) => `<th>${esc(x.name)}</th>`).join('');
   const row = (label, fn) => `<tr><td>${esc(label)}</td>${picks.map((x) => `<td>${esc(fn(x))}</td>`).join('')}</tr>`;
   els.compareTableWrap.innerHTML = `<table><thead><tr><th>Metric</th>${header}</tr></thead><tbody>${row('Section', (x) => pickLang(x.section_en, x.section_ru, x.section_de))}${row('Level', (x) => x.level)}${row('Type', (x) => x.printerType)}${row('Tags', (x) => x.tags.join(', '))}</tbody></table>`;
+  if (els.compareExportCsvBtn) els.compareExportCsvBtn.disabled = picks.length === 0;
   persist(LS.compare, state.compare);
 }
 
@@ -904,6 +974,7 @@ function saveCalcPreset() {
     payload[key] = el.value;
   });
   persist(LS.calcPreset, payload);
+  showToast(state.lang === 'ru' ? 'Пресет сохранен' : (state.lang === 'de' ? 'Preset gespeichert' : 'Preset saved'));
 }
 
 function resetCalcPreset() {
@@ -914,6 +985,7 @@ function resetCalcPreset() {
   });
   persist(LS.calcPreset, CALC_DEFAULTS);
   renderCalculators();
+  showToast(state.lang === 'ru' ? 'Калькулятор сброшен' : (state.lang === 'de' ? 'Rechner zurückgesetzt' : 'Calculator reset'));
 }
 
 function toggleFavorite(id) {
@@ -921,6 +993,7 @@ function toggleFavorite(id) {
   else state.favorites.unshift(id);
   persist(LS.favorites, state.favorites);
   renderDataViews();
+  showToast(state.lang === 'ru' ? 'Избранное обновлено' : (state.lang === 'de' ? 'Favoriten aktualisiert' : 'Favorites updated'));
 }
 
 function pushHistory(item) {
@@ -931,6 +1004,7 @@ function pushHistory(item) {
 function toggleCompare(id) {
   if (state.compare.includes(id)) state.compare = state.compare.filter((x) => x !== id);
   else if (state.compare.length < 4) state.compare.push(id);
+  else showToast(state.lang === 'ru' ? 'Максимум 4 позиции в сравнении' : (state.lang === 'de' ? 'Maximal 4 Positionen im Vergleich' : 'Comparison limit is 4 items'));
   renderDataViews();
 }
 
@@ -949,6 +1023,139 @@ function cycleLangMode() {
   renderDataViews();
 }
 
+function clearAllFilters() {
+  state.search = '';
+  state.section = 'all';
+  state.sort = 'relevance';
+  state.tag = 'all';
+  state.level = 'all';
+  state.printerType = 'all';
+  state.viewMode = 'all';
+  state.beginnerMode = false;
+  if (els.searchInput) els.searchInput.value = '';
+  renderFilters();
+  renderSidebarAndNav();
+  renderDataViews();
+  updateSEO();
+  showToast(state.lang === 'ru' ? 'Фильтры очищены' : (state.lang === 'de' ? 'Filter zurückgesetzt' : 'Filters cleared'));
+}
+
+function toggleDensity() {
+  state.density = state.density === 'compact' ? 'cozy' : 'compact';
+  storage.setItem(LS.density, state.density);
+  applyDensity();
+  localizeExtraUi();
+}
+
+function applyDensity() {
+  document.body.classList.toggle('density-compact', state.density === 'compact');
+}
+
+function isSectionCollapsed(sectionName) {
+  return state.collapsedSections.includes(sectionName);
+}
+
+function toggleSectionCollapsed(sectionName) {
+  if (!sectionName) return;
+  if (isSectionCollapsed(sectionName)) {
+    state.collapsedSections = state.collapsedSections.filter((s) => s !== sectionName);
+  } else {
+    state.collapsedSections = unique([...state.collapsedSections, sectionName]);
+  }
+  persist(LS.collapsedSections, state.collapsedSections);
+}
+
+function exportCompareCsv() {
+  const picks = state.compare.map((id) => state.flat.find((x) => x.id === id)).filter(Boolean).slice(0, 4);
+  if (!picks.length) {
+    showToast(state.lang === 'ru' ? 'Сравнение пустое' : (state.lang === 'de' ? 'Vergleich ist leer' : 'Comparison is empty'));
+    return;
+  }
+  const escCsv = (v) => `"${String(v ?? '').replaceAll('"', '""')}"`;
+  const rows = [];
+  rows.push(['Metric', ...picks.map((x) => x.name)].map(escCsv).join(','));
+  rows.push(['Section', ...picks.map((x) => pickLang(x.section_en, x.section_ru, x.section_de))].map(escCsv).join(','));
+  rows.push(['Level', ...picks.map((x) => x.level)].map(escCsv).join(','));
+  rows.push(['Type', ...picks.map((x) => x.printerType)].map(escCsv).join(','));
+  rows.push(['Tags', ...picks.map((x) => x.tags.join(', '))].map(escCsv).join(','));
+  downloadFile('compare.csv', rows.join('\n'), 'text/csv');
+  showToast('CSV exported');
+}
+
+function onWindowScroll() {
+  if (!els.toTopBtn) return;
+  els.toTopBtn.classList.toggle('show', window.scrollY > 340);
+}
+
+function openHotkeysModal() {
+  if (!els.hotkeyModal) return;
+  els.hotkeyModal.hidden = false;
+}
+
+function closeHotkeysModal() {
+  if (!els.hotkeyModal) return;
+  els.hotkeyModal.hidden = true;
+}
+
+function renderHotkeyHints() {
+  if (!els.hotkeyList) return;
+  const labels = {
+    en: ['Focus search', 'Toggle theme', 'Favorites mode', 'History mode', 'Random resource', 'Beginner mode', 'Hotkeys help', 'Close modal'],
+    ru: ['Фокус на поиск', 'Сменить тему', 'Режим избранного', 'Режим истории', 'Случайный ресурс', 'Режим новичка', 'Справка по клавишам', 'Закрыть окно'],
+    de: ['Suche fokussieren', 'Theme wechseln', 'Favoritenmodus', 'Verlaufsmodus', 'Zufällige Ressource', 'Anfängermodus', 'Hotkeys Hilfe', 'Fenster schließen'],
+  };
+  const map = labels[state.lang] || labels.en;
+  const items = [
+    ['/', map[0]],
+    ['T', map[1]],
+    ['F', map[2]],
+    ['H', map[3]],
+    ['R', map[4]],
+    ['B', map[5]],
+    ['?', map[6]],
+    ['Esc', map[7]],
+  ];
+  els.hotkeyList.innerHTML = items.map(([k, d]) => `<li><kbd>${esc(k)}</kbd><span>${esc(d)}</span></li>`).join('');
+}
+
+function handleGlobalKeydown(event) {
+  if (event.defaultPrevented) return;
+  const target = event.target;
+  const isTyping = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT' || target.isContentEditable);
+  if (event.key === 'Escape') {
+    closeHotkeysModal();
+    return;
+  }
+  if (isTyping) return;
+  if (event.key === '/') {
+    event.preventDefault();
+    els.searchInput?.focus();
+    return;
+  }
+  if (event.key === '?') {
+    event.preventDefault();
+    openHotkeysModal();
+    return;
+  }
+  const key = String(event.key || '').toLowerCase();
+  if (key === 't') cycleTheme();
+  if (key === 'f') els.showFavBtn?.click();
+  if (key === 'h') els.showHistoryBtn?.click();
+  if (key === 'r') els.randomBtn?.click();
+  if (key === 'b') els.beginnerBtn?.click();
+}
+
+function showToast(message) {
+  if (!els.toastRoot || !message) return;
+  els.toastRoot.textContent = message;
+  els.toastRoot.classList.add('show');
+  if (state.toastTimer) window.clearTimeout(state.toastTimer);
+  state.toastTimer = window.setTimeout(() => {
+    els.toastRoot.classList.remove('show');
+    state.toastTimer = null;
+  }, 1800);
+}
+
 function exportMarkdown() {
   const lines = ['# Exported 3D Printing Stack'];
   getFilteredSections().forEach((s) => {
@@ -956,16 +1163,19 @@ function exportMarkdown() {
     s.items.forEach((x) => lines.push(`- [${x.name}](${x.url}) - ${x.description_en || ''}`));
   });
   downloadFile('atlas-export.md', lines.join('\n'), 'text/markdown');
+  showToast('Markdown exported');
 }
 
 function exportVisibleJson() {
   const payload = { exportedAt: new Date().toISOString(), filters: { ...state, data: undefined, flat: undefined }, sections: getFilteredSections() };
   downloadFile('atlas-export.json', JSON.stringify(payload, null, 2), 'application/json');
+  showToast('JSON exported');
 }
 
 function exportFavorites() {
   const payload = { favorites: state.favorites, exportedAt: new Date().toISOString() };
   downloadFile('favorites.json', JSON.stringify(payload, null, 2), 'application/json');
+  showToast(state.lang === 'ru' ? 'Избранное экспортировано' : (state.lang === 'de' ? 'Favoriten exportiert' : 'Favorites exported'));
 }
 
 function importFavorites(e) {
@@ -979,6 +1189,7 @@ function importFavorites(e) {
       state.favorites = unique(ids.filter((id) => state.flat.some((x) => x.id === id)));
       persist(LS.favorites, state.favorites);
       renderDataViews();
+      showToast(state.lang === 'ru' ? 'Избранное импортировано' : (state.lang === 'de' ? 'Favoriten importiert' : 'Favorites imported'));
     } catch (_) {}
   };
   reader.readAsText(file);
@@ -988,6 +1199,7 @@ function importFavorites(e) {
 async function copyDeepLink(id) {
   const url = `${location.origin}${location.pathname}#${id}`;
   await copyText(url);
+  showToast(state.lang === 'ru' ? 'Ссылка скопирована' : (state.lang === 'de' ? 'Link kopiert' : 'Link copied'));
   location.hash = id;
   applyHashTarget();
 }
@@ -1011,6 +1223,7 @@ function reportBroken(item) {
   const title = encodeURIComponent(`Broken link: ${item.name}`);
   const body = encodeURIComponent(`Resource: ${item.name}\nURL: ${item.url}\nSection: ${item.section_en}`);
   window.open(`https://github.com/ad-si/awesome-3d-printing/issues/new?title=${title}&body=${body}`, '_blank');
+  showToast(state.lang === 'ru' ? 'Открыт репорт в GitHub' : (state.lang === 'de' ? 'GitHub-Issue geöffnet' : 'Opened GitHub issue form'));
 }
 
 function buildSuggestionIssueUrl() {
@@ -1077,8 +1290,10 @@ async function syncFromGithub() {
     const removedLabel = state.lang === 'ru' ? 'Удалено' : (state.lang === 'de' ? 'Entfernt' : 'Removed');
     els.syncStatus.textContent = state.lang === 'ru' ? 'Синхронизировано' : (state.lang === 'de' ? 'Synchronisiert' : 'Synced');
     els.diffStatus.textContent = `${addedLabel}: ${added.length}, ${removedLabel}: ${removed.length}`;
+    showToast(state.lang === 'ru' ? 'Синхронизация завершена' : (state.lang === 'de' ? 'Sync abgeschlossen' : 'Sync completed'));
   } catch (_) {
     els.syncStatus.textContent = state.lang === 'ru' ? 'Ошибка синхронизации' : (state.lang === 'de' ? 'Synchronisierung fehlgeschlagen' : 'Sync failed');
+    showToast(state.lang === 'ru' ? 'Синхронизация не удалась' : (state.lang === 'de' ? 'Sync fehlgeschlagen' : 'Sync failed'));
   }
 }
 
@@ -1091,6 +1306,7 @@ async function checkVisibleLinks() {
   persist(LS.linkHealth, state.linkHealth);
   els.syncStatus.textContent = state.lang === 'ru' ? 'Проверка завершена' : (state.lang === 'de' ? 'Prüfung abgeschlossen' : 'Check complete');
   renderGrid();
+  showToast(state.lang === 'ru' ? 'Проверка ссылок завершена' : (state.lang === 'de' ? 'Link-Prüfung abgeschlossen' : 'Link check completed'));
 }
 
 async function checkUrl(url) {

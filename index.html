@@ -85,6 +85,7 @@
       <button id="syncBtn" class="ghost-btn" type="button">Sync from GitHub</button>
       <button id="checkLinksBtn" class="ghost-btn" type="button">Check Links</button>
       <button id="suggestBtn" class="ghost-btn" type="button">Suggest Resource</button>
+      <button id="clearFiltersBtn" class="ghost-btn" type="button">Clear Filters</button>
       <span id="syncStatus" class="muted"></span>
       <span id="diffStatus" class="muted"></span>
       <span id="lastUpdated" class="muted"></span>
@@ -133,6 +134,8 @@
         <button id="exportPdfBtn" class="ghost-btn" type="button">Export PDF</button>
         <button id="importFavBtn" class="ghost-btn" type="button">Import Fav</button>
         <button id="exportFavBtn" class="ghost-btn" type="button">Export Fav</button>
+        <button id="densityBtn" class="ghost-btn" type="button">Density</button>
+        <button id="hotkeysBtn" class="ghost-btn" type="button">Hotkeys</button>
       </section>
       <section class="preset-row" id="presetRow" aria-label="Quick presets">
         <button class="ghost-btn preset-btn" data-preset="beginner" type="button">Beginner</button>
@@ -155,6 +158,9 @@
 
         <article class="panel" id="comparePanel">
           <h2 id="compareTitle">Compare (0/4)</h2>
+          <div class="compare-actions">
+            <button id="compareExportCsvBtn" class="mini-btn" type="button">Export CSV</button>
+          </div>
           <div id="compareTableWrap" class="table-wrap"></div>
         </article>
 
@@ -262,6 +268,15 @@
       <button class="report-link mini-btn js-report" type="button">Report broken link</button>
     </article>
   </template>
+  </div>
+  <button id="toTopBtn" class="to-top-btn" type="button" aria-label="Scroll to top">↑</button>
+  <div id="toastRoot" class="toast-root" aria-live="polite" aria-atomic="true"></div>
+  <div id="hotkeyModal" class="hotkey-modal" hidden>
+    <div class="hotkey-dialog" role="dialog" aria-modal="true" aria-labelledby="hotkeyTitle">
+      <h3 id="hotkeyTitle">Keyboard Shortcuts</h3>
+      <ul id="hotkeyList"></ul>
+      <button id="hotkeyCloseBtn" class="ghost-btn" type="button">Close</button>
+    </div>
   </div>
 
   <script src="./data/resources-inline.js"></script>
